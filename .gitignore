@@ -1,0 +1,4 @@
+# local env files
+.env
+/public/documentos
+/config/database.php
