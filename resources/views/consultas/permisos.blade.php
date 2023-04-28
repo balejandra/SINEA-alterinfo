@@ -31,7 +31,7 @@
                         <div class="card-body" style="min-height: 350px;">
                             {!! Form::open(['route' => 'consultasPermiso.queries']) !!}
                             <div class="row align-self-start">
-                                <span class="title-estadia">Busqueda de Permisos</span>
+                                <span class="title-estadia">Consulta de Permisos</span>
                                 <div class="form-group col-sm-3">
                                     {!! Form::label('permiso', 'Permiso:') !!}
                                     {!! Form::select('permiso', ['Zarpe Nacional' => 'Zarpe Nacional',

@@ -1,4 +1,4 @@
-Busqueda:  @foreach($busqueda as $buscar) {{$buscar}}@endforeach
+Consulta:  @foreach($busqueda as $buscar) {{$buscar}}@endforeach
 <br>
 <br>
 <table class="table table-striped table-bordered display2" style="width:100%">
