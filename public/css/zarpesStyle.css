@@ -314,3 +314,8 @@ div.container { max-width: 1200px }
 .title-inea{
     color:#003B74 !important;
 }
+
+.card-header-consulta {
+    background-color: #fff !important;
+
+}

@@ -174,9 +174,7 @@ Route::middleware(['auth' , 'verified'])->group(function () {
     /*RUTAS CONSULTAS*/
 
 
-    Route::get('/consultasPermiso/',[\App\Http\Controllers\Consultas\QueriesPermisoController::class,'index'])->name('consultasPermiso.index');
+    Route::get('/busquedaPermisos/',[\App\Http\Controllers\Consultas\QueriesPermisoController::class,'index'])->name('busquedaPermisos.index');
 
-    Route::post('/consultasPermiso/queries',[\App\Http\Controllers\Consultas\QueriesPermisoController::class,'querie'])->name('consultasPermiso.queries');
-
-   // Route::resource('consultasPermiso', \App\Http\Controllers\Consultas\QueriePermisoController::class);
+    Route::post('/busquedaPermisos/queries',[\App\Http\Controllers\Consultas\QueriesPermisoController::class,'querie'])->name('busquedaPermisos.queries');
 });

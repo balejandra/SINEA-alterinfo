@@ -1,4 +1,4 @@
-Consulta:  @foreach($busqueda as $vuscar) {{$vuscar}}@endforeach
+Busqueda:  @foreach($busqueda as $vuscar) {{$vuscar}}@endforeach
 <br>
 <br>
 <table class="table table-striped table-bordered compact display" style="width:100%">
@@ -43,10 +43,17 @@ Consulta:  @foreach($busqueda as $vuscar) {{$vuscar}}@endforeach
             @endif
             <td>
                 @can('consultar-zarpe')
-                    <a class="btn btn-sm btn-primary"
-                       href=" {{route('permisoszarpes.show',$permiso->id)}}">
-                        <i class="fa fa-search"></i>
-                    </a>
+                    @if ($permiso->descripcion_navegacion_id!==4)
+                        <a class="btn btn-sm btn-primary"
+                           href=" {{route('permisoszarpes.show',$permiso->id)}}">
+                            <i class="fa fa-search"></i>
+                        </a>
+                    @else
+                        <a class="btn btn-sm btn-primary"
+                           href=" {{route('zarpeInternacional.show',$permiso->id)}}">
+                            <i class="fa fa-search"></i>
+                        </a>
+                    @endif
                 @endcan
 
                 @if (($permiso->status->id==1)||($permiso->status->id==4)||($permiso->status->id==5))

@@ -1,16 +1,17 @@
 @extends('layouts.app')
 @section("titulo")
-    Zarpes
+    Zarpes | Busqueda
 @endsection
 @section('content')
     @push('scripts')
         <script src="{{asset('js/consultas.js')}}"></script>
+        <script src="{{asset('js/buscador.js')}}"></script>
     @endpush
     <div class="header-divider"></div>
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb my-0 ms-2">
-                <li class="breadcrumb-item">Consulta</li>
+                <li class="breadcrumb-item">Busqueda</li>
             </ol>
         </nav>
     </div>
@@ -23,36 +24,126 @@
                     <div class="card">
                         <div class="card-header">
                             <i class="fas fa-search-plus"></i>
-                            <strong>Consulta</strong>
+                            <strong>Busqueda</strong>
                             <div class="card-header-actions">
 
                             </div>
                         </div>
                         <div class="card-body" style="min-height: 350px;">
-                            {!! Form::open(['route' => 'consultasPermiso.queries']) !!}
+                            {!! Form::open(['route' => 'busquedaPermisos.queries']) !!}
                             <div class="row align-self-start">
-                                <span class="title-estadia">Consulta de Permisos</span>
-                                <div class="form-group col-sm-3">
+                                <span class="title-estadia">Busqueda de Permisos</span>
+                                <div class="form-group col-sm-2">
                                     {!! Form::label('permiso', 'Permiso:') !!}
                                     {!! Form::select('permiso', ['Zarpe Nacional' => 'Zarpe Nacional',
                                                                  'Zarpe Internacional' => 'Zarpe Internacional',
                                                                  'Estadia'=>'Estadia'
-                                                                 ], null, ['class'=>'form-control custom-select','placeholder' => 'Seleccione','required']) !!}
+                                                                 ], null, ['class'=>'form-control custom-select','placeholder' => 'Seleccione','required',
+                                                                 'onclick="changeOrigen();"',
+                                                                 'autocomplete'=>'off']) !!}
                                 </div>
-                                <input type="text" name="capitania_name"  hidden>
-                                <div class="form-group col-sm-3">
-                                    {!! Form::label('capitania', 'Capitanía:') !!}
-                                    {!! Form::select('capitania_id', $capitania, null, ['id'=>'capitania_id','class' => 'form-control custom-select','placeholder' => 'Seleccione una capitania','onclick="Establecimiento1();"']) !!}
+                                <div class="form-group col-sm-2">
+                                    {!! Form::label('nro_solicitud', 'Nro de Solicitud:') !!}
+                                    {!! Form::text('nro_solicitud', null, ['class' => 'form-control']) !!}
+                                </div>
+                                <div class="form-group col-sm-2">
+
+                                    {!! Form::label('solicitante', 'Solicitante:') !!}
+                                    {!! Form::text('solicitante',null, null, ['id'=>'solicitante',
+                                                    'class' => 'form-control',
+                                                    'placeholder' => 'Seleccione un usuario']) !!}
+                                    <input type="text" name="solicitante_id" id="solicitante_id" hidden>
+                                </div>
+                                <div class="form-group col-sm-2">
+                                    {!! Form::label('bandera', 'Bandera') !!}
+                                    {!! Form::select('bandera', ['nacional' => 'Nacional', 'extranjera' => 'Extranjera'], null,
+                                                        ['id'=>'bandera',
+                                                        'class'=>'form-control custom-select',
+                                                        'placeholder' => 'Bandera...']) !!}
+                                </div>
+                                <div class="form-group col-sm-2">
+                                    {!! Form::label('matricula', 'Matrícula o Nro de Registro:') !!}
+                                    {!! Form::text('matricula', null, ['class' => 'form-control']) !!}
+                                </div>
+                                <div class="form-group col-sm-2">
+                                    {!! Form::label('estatus', 'Estatus') !!}
+                                    {!! Form::select('estatus', $estatus, null, ['id'=>'estatus','class'=>'form-control custom-select',
+                                                        'placeholder' => 'Estatus...',
+                                                         'onclick="changeEstatusName();"']) !!}
+                                    <input type="text" name="estatus_name" hidden>
+                                </div>
+                                <div class="clearfix"></div>
+
+
+                                <div class="row">
+                                    <input type="text" name="capitania_name_origen" hidden>
+                                    <input type="text" name="establecimiento_name_origen" hidden>
+                                    <div class="col-sm-6" id="origen-div" style="display: block">
+                                        <div class="card mb-3">
+                                            <div class="card-header card-header-consulta text-center">Origen:<br>
+
+                                                <div class="row">
+                                                    <div class="col" id="capitania_div">
+
+                                                        {!! Form::label('capitania', 'Capitanía:') !!}
+                                                        {!! Form::select('capitania_id_origen', $capitania, null, ['id'=>'capitania_id_origen',
+                                                                            'class' => 'form-control custom-select',
+                                                                            'placeholder' => 'Seleccione una capitania',
+                                                                            'onclick="Establecimiento_origen();"']) !!}
+                                                    </div>
+                                                    <div class="col" id="establecimiento_div">
+
+                                                        {!! Form::label('capitania', 'Establecimiento:') !!}
+                                                        {!! Form::select('establecimiento_nautico_id_origen',[], null,
+                                                                            ['id'=>'establecimientos_origen',
+                                                                            'class' => ' form-control custom-select',
+                                                                            'placeholder' => 'Escoja una Capitanía para cargar los Establecimientos...',
+                                                                            'onclick="esta_name_origen();"']) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header card-header-consulta text-center">Destino:<br>
+                                                <div class="row">
+                                                    <div class="col" id="capitania_destino_div">
+                                                        <input type="text" name="capitania_name_destino" hidden>
+                                                        {!! Form::label('capitania', 'Capitanía:') !!}
+                                                        {!! Form::select('capitania_id_destino', $capitania, null, ['id'=>'capitania_id_destino',
+                                                                            'class' => 'form-control custom-select',
+                                                                            'placeholder' => 'Seleccione una capitania',
+                                                                            'onclick="Establecimiento_destino();"']) !!}
+                                                    </div>
+                                                    <div class="col" id="establecimiento_destino_div">
+                                                        <input type="text" name="establecimiento_name_destino" hidden>
+                                                        {!! Form::label('capitania', 'Establecimiento:') !!}
+                                                        {!! Form::select('establecimiento_nautico_id_destino',[], null,
+                                                                            ['id'=>'establecimientos_destino',
+                                                                            'class' => ' form-control custom-select',
+                                                                            'placeholder' => 'Escoja una Capitanía para cargar los Establecimientos...',
+                                                                            'onclick="esta_name_destino();"']) !!}
+                                                    </div>
+                                                    <div class="col" id="paises_div" style="display: none">
+                                                        <input type="text" name="paises_name" hidden>
+                                                        {!! Form::label('paises_id', 'Pais:') !!}
+                                                        {!! Form::select('paises_id', $paises, null, ['id'=>'paises_id',
+                                                                            'class' => 'form-control custom-select',
+                                                                            'placeholder' => 'Seleccione un País',
+                                                                             'onclick="changePaisesName();"']) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </div>
-                                <input type="text" name="establecimiento_name"  hidden>
-                                <div class="form-group col-sm-3" id="divestablecimiento">
-                                    {!! Form::label('capitania', 'Establecimiento:') !!}
-                                    {!! Form::select('establecimiento_nautico_id',[], null, ['id'=>'establecimientos','class' => ' form-control custom-select','placeholder' => 'Escoja una Capitanía para cargar los Establecimientos...','onclick="esta_name();"']) !!}
 
-                                </div>
-                              <div class="clearfix"></div>
-                                <input type="text" name="filtro_name"  hidden>
+
+                                <div class="clearfix"></div>
+                                <input type="text" name="filtro_name" hidden>
                                 <div class="form-group col-sm-2">
                                     {!! Form::label('capitania', 'Campo Fecha:') !!}
                                     {!! Form::select('filtro_fecha', ['fecha_hora_salida' => 'Fecha Salida', 'fecha_hora_regreso' => 'Fecha Regreso','fecha_arribo'=>'Fecha Arribo (Estadia)'], null, ['id'=>'filtro_fecha','class'=>'form-control custom-select','placeholder' => 'Filtro de Fecha...','onclick="changeFiltro();"']) !!}
@@ -65,11 +156,12 @@
                                 </div>
                                 <div class="form-group mt-4 col-sm-2">
                                     <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="rango_fecha" id="rango_fecha" value="1"
-                                           onclick="mostrarRangoFechas()" autocomplete="off" >
-                                    <label class="form-check-label" for="natural">
-                                        Rango de Fechas
-                                    </label>
+                                        <input class="form-check-input" type="checkbox" name="rango_fecha"
+                                               id="rango_fecha" value="1"
+                                               onclick="mostrarRangoFechas()" autocomplete="off">
+                                        <label class="form-check-label" for="natural">
+                                            Rango de Fechas
+                                        </label>
                                     </div>
                                 </div>
 
@@ -95,9 +187,9 @@
                             @includeWhen($queries==='Zarpe Nacional', 'consultas.tableZarpe')
                             @includeWhen($queries==='Zarpe Internacional', 'consultas.tableZarpe')
                             @includeWhen($queries==='Estadia', 'consultas.tableEstadia')
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 @endsection

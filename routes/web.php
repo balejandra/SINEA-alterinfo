@@ -40,6 +40,7 @@ Route::middleware(['auth' , 'verified'])->group(function () {
     Route::resource('users', \App\Http\Controllers\Publico\UserController::class);
     Route::get('userDelete.index',[\App\Http\Controllers\Publico\UserController::class,'indexUserDeleted'])->name('userDelete.index');
     Route::get('userDeleted/{user}',[\App\Http\Controllers\Publico\UserController::class,'restoreUserDeleted'])->name('userDeleted.restore');
+    Route::get('/searchNombres', [\App\Http\Controllers\Publico\UserController::class,'searchNombres'])->name('user.searchNombres');
 
     Route::get('EstablecimientoUser',[\App\Http\Controllers\Publico\CapitaniaUserController::class,'EstablecimientoUser'])->name('AsignarEstablecimiento');
 

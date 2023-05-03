@@ -265,4 +265,12 @@ class UserController extends Controller
 
         return redirect(route('userDelete.index'));
     }
+
+    public function searchNombres(Request $request)
+    {
+        //  dd($request->search);
+        $user = User::where('nombres', 'LIKE', '%' . $request->search . '%')
+            ->orWhere('apellidos', 'LIKE', '%' . $request->search . '%')->get();
+        return \response()->json($user);
+    }
 }
