@@ -8,14 +8,17 @@ function changeOrigen() {
         capitania.style.display='block';
         establecimiento.style.display='block';
         divOrigenInternacional.style.display='none';
-        document.getElementById("capitania_id_origen").disabled = false;
+        $('#capitania_id_origen').prop('disabled', false);
+        $('#capitania_id_origen').selectpicker('refresh');
         document.getElementById("establecimientos_origen").disabled = false;
         document.getElementById('paises_id').selectedIndex = '';
     } if (permiso==='Zarpe Internacional'){
-        document.getElementById("capitania_id_origen").disabled = false;
+        $('#capitania_id_origen').prop('disabled', false);
+        $('#capitania_id_origen').selectpicker('refresh');
         document.getElementById("establecimientos_origen").disabled = false;
         document.getElementById('paises_id').selectedIndex = '';
-        document.getElementById('capitania_id_destino').selectedIndex = '';
+        $('#capitania_id_destino').selectpicker('deselectAll');
+        $('#capitania_id_destino').selectpicker('refresh');
         document.getElementById('establecimientos_destino').selectedIndex = '';
         document.getElementById("bandera").disabled = false;
         capitania.style.display='none';
@@ -26,8 +29,10 @@ function changeOrigen() {
     }if (permiso==='Estadia'){
         document.getElementById('bandera').selectedIndex = '';
         document.getElementById("bandera").disabled = true;
-        document.getElementById('capitania_id_origen').selectedIndex = '';
-        document.getElementById("capitania_id_origen").disabled = true;
+
+        $('#capitania_id_origen').selectpicker('deselectAll');
+        $('#capitania_id_origen').prop('disabled', true);
+        $('#capitania_id_origen').selectpicker('refresh');
         document.getElementById('establecimientos_origen').selectedIndex = '';
         document.getElementById("establecimientos_origen").disabled = true;
         document.getElementById('paises_id').selectedIndex = '';
@@ -60,65 +65,96 @@ function mostrarRangoFechas() {
         $('#filtro_fecha').prop("required", false);
     }
 }
+$(".select_capOrigen").on("changed.bs.select",
+    function(e) {
+        var valores = $.map(
+            $('#capitania_id_origen option:selected'),
+            function(o, i) { return $(o).text(); });
+        $('input[name="capitania_name_origen"]').val(valores.join(''));
+        var idCapitania = $(this).val();
+        if (idCapitania.length==1){
+            var capi=$('select[id="capitania_id_origen"] option:selected').text()
+            $('input[name="capitania_name_origen"]').val(capi);
+            $.ajax({
+                url: route('AsignarEstablecimiento'),
+                data: {idcap: idCapitania }
 
-function Establecimiento_origen(){
-    var idCapitania = $("#capitania_id_origen").val();
-    var capi=$('select[id="capitania_id_origen"] option:selected').text()
-    $('input[name="capitania_name_origen"]').val(capi);
-    $.ajax({
-        url: route('AsignarEstablecimiento'),
-        data: {idcap: idCapitania }
+            })// This will be called on success
+                .done(function (response) {
+                    //  alert(response);
+                    respuesta = JSON.parse(response);
+                    let establecimientos=respuesta[0];
+                    let select=document.getElementById("establecimientos_origen");
+                    let options="<option value=>Puede asignar un Establecimiento...</option>";
+                    for (var i = 0; i < establecimientos.length; i++) {
+                        options+="<option value='"+establecimientos[i].id+"'>"+establecimientos[i].nombre+"</option>"
+                    }
+                    select.innerHTML=options;
+                    // console.log(options);
+                })
 
-    })// This will be called on success
-        .done(function (response) {
-            //  alert(response);
-            respuesta = JSON.parse(response);
-            let establecimientos=respuesta[0];
+                // This will be called on error
+                .fail(function (response) {
+                    console.log("fallo al buscar establecimientos nautico ");
+                });
+
+        }else{
             let select=document.getElementById("establecimientos_origen");
-            let options="<option value=>Puede asignar un Establecimiento...</option>";
-            for (var i = 0; i < establecimientos.length; i++) {
-                options+="<option value='"+establecimientos[i].id+"'>"+establecimientos[i].nombre+"</option>"
-            }
+            $("#establecimientos_origen").find('option').not(':first').remove();
+            let options="<option value=>Escoja una Capitanía para cargar los Establecimientos...</option>";
             select.innerHTML=options;
-            // console.log(options);
-        })
+        }
 
-        // This will be called on error
-        .fail(function (response) {
-            console.log("fallo al buscar establecimientos nautico ");
-        });
 
-}
+    });
 
-function Establecimiento_destino(){
+$(".select_capDestino").on("changed.bs.select",
+    function(e) {
+        var valores = $.map(
+            $('#capitania_id_destino option:selected'),
+            function(o, i) { return $(o).text(); });
+        $('input[name="capitania_name_destino"]').val(valores.join(''));
 
-    var idCapitania = $("#capitania_id_destino").val();
-    var capi=$('select[id="capitania_id_destino"] option:selected').text()
-    $('input[name="capitania_name_destino"]').val(capi);
-    $.ajax({
-        url: route('AsignarEstablecimiento'),
-        data: {idcap: idCapitania }
+        var idCapitania = $(this).val();
+        if (idCapitania.length==1){
+            var capi=$('select[id="capitania_id_destino"] option:selected').text()
+            $('input[name="capitania_name_destino"]').val(capi);
+            $.ajax({
+                url: route('AsignarEstablecimiento'),
+                data: {idcap: idCapitania }
 
-    })// This will be called on success
-        .done(function (response) {
-            //  alert(response);
-            respuesta = JSON.parse(response);
-            let establecimientos=respuesta[0];
+            })// This will be called on success
+                .done(function (response) {
+                    //  alert(response);
+                    respuesta = JSON.parse(response);
+                    let establecimientos=respuesta[0];
+                    let select=document.getElementById("establecimientos_destino");
+                    let options="<option value=>Puede asignar un Establecimiento...</option>";
+                    for (var i = 0; i < establecimientos.length; i++) {
+                        options+="<option value='"+establecimientos[i].id+"'>"+establecimientos[i].nombre+"</option>"
+                    }
+                    select.innerHTML=options;
+                    // console.log(options);
+                })
+
+                // This will be called on error
+                .fail(function (response) {
+                    console.log("fallo al buscar establecimientos nautico ");
+                });
+
+        }else{
             let select=document.getElementById("establecimientos_destino");
-            let options="<option value=>Puede asignar un Establecimiento...</option>";
-            for (var i = 0; i < establecimientos.length; i++) {
-                options+="<option value='"+establecimientos[i].id+"'>"+establecimientos[i].nombre+"</option>"
-            }
+            $("#establecimientos_destino").find('option').not(':first').remove();
+            let options="<option value=>Escoja una Capitanía para cargar los Establecimientos...</option>";
             select.innerHTML=options;
-            // console.log(options);
-        })
+        }
 
-        // This will be called on error
-        .fail(function (response) {
-            console.log("fallo al buscar establecimientos nautico ");
-        });
 
-}
+    });
+
+
+
+
 function esta_name_origen() {
     var esta=$('select[name="establecimiento_nautico_id_origen"] option:selected').text()
     $('input[name="establecimiento_name_origen"]').val(esta);

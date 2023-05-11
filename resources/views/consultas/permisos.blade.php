@@ -16,6 +16,7 @@
         </nav>
     </div>
     </header>
+    @can('show-busqueda')
     <div class="container-fluid">
         <div class="animated fadeIn">
             @include('flash::message')
@@ -33,14 +34,17 @@
                             {!! Form::open(['route' => 'busquedaPermisos.queries']) !!}
                             <div class="row align-self-start">
                                 <span class="title-estadia">Busqueda de Permisos</span>
+                                <br>
+                                <div class="clearfix"></div>
                                 <div class="form-group col-sm-2">
                                     {!! Form::label('permiso', 'Permiso:') !!}
-                                    {!! Form::select('permiso', ['Zarpe Nacional' => 'Zarpe Nacional',
-                                                                 'Zarpe Internacional' => 'Zarpe Internacional',
-                                                                 'Estadia'=>'Estadia'
-                                                                 ], null, ['class'=>'form-control custom-select','placeholder' => 'Seleccione','required',
-                                                                 'onclick="changeOrigen();"',
-                                                                 'autocomplete'=>'off']) !!}
+                                    <select name="permiso" class="form-control custom-select" id="permiso" required
+                                            onclick="changeOrigen();" autocomplete="off">
+                                                                <option value="" selected>Seleccione</option>
+                                        @can('zarpesN-busqueda')<option value="Zarpe Nacional">Zarpe Nacional</option> @endcan
+                                        @can('zarpesI-busqueda')<option value="Zarpe Internacional">Zarpe Internacional</option>@endcan
+                                        @can('estadia-busqueda')<option value="Estadia">Estadia</option>@endcan
+                                    </select>
                                 </div>
                                 <div class="form-group col-sm-2">
                                     {!! Form::label('nro_solicitud', 'Nro de Solicitud:') !!}
@@ -83,13 +87,18 @@
                                             <div class="card-header card-header-consulta text-center">Origen:<br>
 
                                                 <div class="row">
-                                                    <div class="col" id="capitania_div">
+                                                    <div class=" col" id="capitania_div">
 
                                                         {!! Form::label('capitania', 'Capitanía:') !!}
-                                                        {!! Form::select('capitania_id_origen', $capitania, null, ['id'=>'capitania_id_origen',
-                                                                            'class' => 'form-control custom-select',
-                                                                            'placeholder' => 'Seleccione una capitania',
-                                                                            'onclick="Establecimiento_origen();"']) !!}
+                                                        <select name="capitania_id_origen[]" id="capitania_id_origen"
+                                                                class="selectpicker form-control custom-select select_capOrigen" multiple
+                                                                title="Seleccione una capitania..."
+                                                                data-dropup-auto="false"
+                                                                data-actions-box="true">
+                                                            @foreach ($capitania as $key => $cap )
+                                                                <option value="{{$key}}">{{$cap}}  </option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                     <div class="col" id="establecimiento_div">
 
@@ -112,10 +121,15 @@
                                                     <div class="col" id="capitania_destino_div">
                                                         <input type="text" name="capitania_name_destino" hidden>
                                                         {!! Form::label('capitania', 'Capitanía:') !!}
-                                                        {!! Form::select('capitania_id_destino', $capitania, null, ['id'=>'capitania_id_destino',
-                                                                            'class' => 'form-control custom-select',
-                                                                            'placeholder' => 'Seleccione una capitania',
-                                                                            'onclick="Establecimiento_destino();"']) !!}
+                                                        <select name="capitania_id_destino[]" id="capitania_id_destino"
+                                                                class="selectpicker form-control custom-select select_capDestino" multiple
+                                                                title="Seleccione una capitania..."
+                                                                data-dropup-auto="false"
+                                                                data-actions-box="true">
+                                                            @foreach ($capitania as $key => $cap )
+                                                                <option value="{{$key}}">{{$cap}}  </option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                     <div class="col" id="establecimiento_destino_div">
                                                         <input type="text" name="establecimiento_name_destino" hidden>
@@ -175,12 +189,16 @@
                                     <input type="date" class="form-control" id="fecha_final" name="fecha_final"
                                            maxlength="10">
                                 </div>
+                                <div class="form-group col-sm-2">
 
+
+                                </div>
                                 <div class="form-group col-sm-2 d-flex align-items-end">
                                     {!! Form::submit('Buscar', ['class' => 'btn btn-primary']) !!}
                                 </div>
                                 <br>
                             </div>
+
                             <hr class="dropdown-divider">
                             <br>
                             {!! Form::close() !!}
@@ -192,4 +210,5 @@
                 </div>
             </div>
         </div>
+    @endcan
 @endsection

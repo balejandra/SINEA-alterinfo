@@ -15,7 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Zarpes\PermisoZarpe;
-
+use Symfony\Component\Console\Input\Input;
 
 
 class QueriesPermisoController extends Controller
@@ -70,16 +70,10 @@ class QueriesPermisoController extends Controller
      */
     public function querie(Request $request)
     {
-        /*CONSULTA PARA LLENAR LOS SELECTS*/
-        $capitanias = Capitania::pluck('nombre', 'id');
-        $estable = EstablecimientoNautico::pluck('nombre', 'id');
-        $estatus= Status::pluck('nombre','id');
-        $paises= Paises::pluck('name','id');
-
         /*REQUEST PARA QUERIE*/
         $permiso=$request->input('permiso');
-        $capitania_origen = $request->input('capitania_id_origen');
-        $capitania_destino = $request->input('capitania_id_destino');
+        $capitania_origen[] = $request->input('capitania_id_origen');
+        $capitania_destino[] = $request->input('capitania_id_destino');
         $establecimiento_origen = $request->input('establecimiento_nautico_id_origen');
         $establecimiento_destino = $request->input('establecimiento_nautico_id_destino');
         $filtro_fecha = $request->input('filtro_fecha');
@@ -98,8 +92,15 @@ class QueriesPermisoController extends Controller
         }if ($request->permiso === 'Zarpe Internacional') {
         $Internacional=true;
     }
+        $origenArray=[];
+        $destinoArray=[];
+        foreach ($capitania_origen as $id){
+           $origenArray=$id;
+        }
+        foreach ($capitania_destino as $id){
+            $destinoArray=$id;
+        }
 
-//dd($request);
         if ($request->permiso === 'Estadia') {
             $queryPermiso = PermisoEstadia::when($permiso,function (Builder $q){
                 $q->orderBy('created_at', 'asc');
@@ -116,8 +117,8 @@ class QueriesPermisoController extends Controller
                 ->when($status_id, function (Builder $q, string $status_id) {
                     $q->where('status_id',$status_id );
                 })
-                ->when($capitania_destino, static function (Builder $query, string $capitania_destino) {
-                    $query->where('capitania_id', $capitania_destino );
+                ->when($destinoArray, static function (Builder $query, array $destinoArray) {
+                    $query->whereIn('capitania_id', $destinoArray );
                 })
                 ->when($establecimiento_destino, function (Builder $q, string $establecimiento_destino) {
                     $q->where('establecimiento_nautico_id',$establecimiento_destino );
@@ -152,14 +153,14 @@ class QueriesPermisoController extends Controller
                 ->when($status_id, function (Builder $q, string $status_id) {
                     $q->where('status_id',$status_id );
                 })
-                ->when($capitania_origen, static function (Builder $query, string $capitania_origen) {
-                    $query->whereIn('establecimiento_nautico_id', EstablecimientoNautico::select('id')->where('capitania_id', $capitania_origen)->get());
+                ->when($origenArray, static function (Builder $query, array $origenArray) {
+                    $query->whereIn('establecimiento_nautico_id', EstablecimientoNautico::select('id')->whereIn('capitania_id', $origenArray)->get());
                 })
                 ->when($establecimiento_origen, function (Builder $q, string $establecimiento_origen) {
                     $q->where('establecimiento_nautico_id',$establecimiento_origen );
                 })
-                ->when($capitania_destino, static function (Builder $query, string $capitania_destino) {
-                    $query->where('destino_capitania_id', $capitania_destino);
+                ->when($destinoArray, static function (Builder $query, array $destinoArray) {
+                    $query->whereIn('destino_capitania_id', $destinoArray );
                 })
                 ->when($establecimiento_destino, function (Builder $q, string $establecimiento_destino) {
                     $q->where('establecimiento_nautico_destino_id',$establecimiento_destino );
@@ -177,23 +178,30 @@ class QueriesPermisoController extends Controller
 
         }
 
-
+//dd($request->input('capitania_name_origen') );
         $busqueda=[];
         ($permiso) ? $busqueda[]=$permiso :null  ;
-        ($nro_solicitud) ? $busqueda[]='| Nro de solicitud: '.$nro_solicitud : null  ;
+        ($nro_solicitud) ? $busqueda[]='| Nro de Solicitud: '.$nro_solicitud : null  ;
         ($solicitante_id) ? $busqueda[]='| Solicitante: '.$request->solicitante : null  ;
         ($bandera) ? $busqueda[]='| Bandera: '.$bandera : null  ;
         ($matricula) ? $busqueda[]='| Matrícula o Nro Registro: '.$matricula : null  ;
         ($status_id) ? $busqueda[]='| Estatus: '.$request->estatus_name : null  ;
-        ($capitania_origen) ? $busqueda[]='| Capitania Origen: '.$request->capitania_name_origen : null  ;
+        ($capitania_origen) ? $busqueda[]='| Capitanía Origen: '.$request->capitania_name_origen : null  ;
         ($establecimiento_origen) ? $busqueda[]='| Establecimiento Origen: '.$request->establecimiento_name_origen : null  ;
-        ($capitania_destino) ? $busqueda[]='| Capitania Destino: '.$request->capitania_name_destino : null  ;
+        ($capitania_destino) ? $busqueda[]='| Capitanía Destino: '.$request->capitania_name_destino : null  ;
         ($establecimiento_destino) ? $busqueda[]='| Establecimiento Destino: '.$request->establecimiento_name_destino : null  ;
         ($pais) ? $busqueda[]='| País Destino: '.$request->paises_name : null  ;
         ($filtro_fecha) ? $busqueda[]='|: '.$request->filtro_name : null  ;
         ($fecha_unica) ? $busqueda[]=$fecha_unica : null  ;
         ($rango_fecha) ? $busqueda[]='Rango: del '.$request->fecha_inicial. ' al '.$request->fecha_final : null  ;
         //  dd($busqueda);
+
+        /*CONSULTA PARA LLENAR LOS SELECTS*/
+        $capitanias = Capitania::pluck('nombre', 'id');
+        $estable = EstablecimientoNautico::pluck('nombre', 'id');
+        $estatus= Status::pluck('nombre','id');
+        $paises= Paises::pluck('name','id');
+
         return view('consultas.permisos')
             ->with('capitania', $capitanias)
             ->with('establecimientos', $estable)

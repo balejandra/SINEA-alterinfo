@@ -181,5 +181,35 @@ class ModelHasRoles extends Seeder
         ])->get();
         Role::findOrFail(11)->permissions()->sync($operaciones_sedecentral->pluck('id'));
 
+        //Supervisor Zarpes
+        $supervisor_zarpes=Permission::whereIn('name', [
+            'show-busqueda',
+            'estadia-busqueda',
+            'zarpesN-busqueda',
+            'zarpesI-busqueda'
+
+        ])->get();
+        Role::findOrFail(12)->permissions()->sync($supervisor_zarpes->pluck('id'));
+
+        //Consulta Zarpes Simple
+        $consulta_zarpes_simple=Permission::whereIn('name', [
+            'show-busqueda',
+            'zarpesN-busqueda',
+            'zarpesI-busqueda'
+
+        ])->get();
+        Role::findOrFail(13)->permissions()->sync($consulta_zarpes_simple->pluck('id'));
+
+
+        //Consulta Zarpes
+        $consulta_zarpes=Permission::whereIn('name', [
+            'show-busqueda',
+            'estadia-busqueda',
+            'zarpesN-busqueda',
+            'zarpesI-busqueda'
+
+        ])->get();
+        Role::findOrFail(14)->permissions()->sync($consulta_zarpes->pluck('id'));
+
     }
 }

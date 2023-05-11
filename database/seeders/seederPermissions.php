@@ -140,6 +140,12 @@ class seederPermissions extends Seeder
             'listar-certificado',
             'crear-certificado',
 
+            //Permisos para busquedas
+            'show-busqueda',
+            'estadia-busqueda',
+            'zarpesN-busqueda',
+            'zarpesI-busqueda'
+
 
 
         ];

@@ -70,6 +70,13 @@
 <script src="{{asset('assets/@coreui/utils/js/coreui-utils.js')}}"></script>
 <script src="{{asset('assets/bootbox/bootbox.js')}}"></script>
 <script src="{{asset('assets/EasyAutocomplete-1.3.5/jquery.easy-autocomplete.js')}}"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="{{asset('assets/bootstrap-select-1.14.0-beta2/dist/css/bootstrap-select.min.css')}}">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="{{asset('assets/bootstrap-select-1.14.0-beta2/dist/js/bootstrap-select.min.js')}}"></script>
+<script src="{{asset('assets/bootstrap-select-1.14.0-beta2/dist/js/i18n/defaults-es_ES.min.js')}}"></script>
+
 
 
 </html>
