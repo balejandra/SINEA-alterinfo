@@ -21,16 +21,6 @@ use Symfony\Component\Console\Input\Input;
 class QueriesPermisoController extends Controller
 {
 
-    public function __construct()
-    {
-
-        /* $this->middleware('permission:listar-permiso', ['only'=>['index'] ]);
-         $this->middleware('permission:crear-permiso', ['only'=>['create','store']]);
-         $this->middleware('permission:editar-permiso', ['only'=>['edit','update']]);
-         $this->middleware('permission:consultar-permiso', ['only'=>['show'] ]);
-         $this->middleware('permission:eliminar-permiso', ['only'=>['destroy'] ]);*/
-
-    }
     /**
      * Display a listing of the resource.
      *

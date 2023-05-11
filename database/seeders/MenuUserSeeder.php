@@ -236,6 +236,9 @@ class MenuUserSeeder extends Seeder
             array('role_id' => '9', 'menu_id' => $menuZarpes['id']),
             array('role_id' => '10', 'menu_id' => $menuZarpes['id']),
             array('role_id' => '11', 'menu_id' => $menuZarpes['id']),
+            array('role_id' => '12', 'menu_id' => $menuZarpes['id']),
+            array('role_id' => '13', 'menu_id' => $menuZarpes['id']),
+            array('role_id' => '14', 'menu_id' => $menuZarpes['id']),
 
             array('role_id' => '1', 'menu_id' => $permisoszarpes['id']),
             array('role_id' => '2', 'menu_id' => $permisoszarpes['id']),
