@@ -215,15 +215,6 @@ class MenuUserSeeder extends Seeder
             'icono'=>'fas fa-ship',
         ]);
 
-        //Busqueda Permisos
-        $busquedaPermisos = Menu::create([
-            'name' => 'Busqueda',
-            'url' => '/busquedaPermisos',
-            'order' => '3',
-            'parent' => $menuZarpes['id'],
-            'icono'=>'fas fa-search-plus',
-        ]);
-
         $menuRols2 = [
             array('role_id' => '1', 'menu_id' => $menuZarpes['id']),
             array('role_id' => '2', 'menu_id' => $menuZarpes['id']),
@@ -236,9 +227,6 @@ class MenuUserSeeder extends Seeder
             array('role_id' => '9', 'menu_id' => $menuZarpes['id']),
             array('role_id' => '10', 'menu_id' => $menuZarpes['id']),
             array('role_id' => '11', 'menu_id' => $menuZarpes['id']),
-            array('role_id' => '12', 'menu_id' => $menuZarpes['id']),
-            array('role_id' => '13', 'menu_id' => $menuZarpes['id']),
-            array('role_id' => '14', 'menu_id' => $menuZarpes['id']),
 
             array('role_id' => '1', 'menu_id' => $permisoszarpes['id']),
             array('role_id' => '2', 'menu_id' => $permisoszarpes['id']),
@@ -271,12 +259,6 @@ class MenuUserSeeder extends Seeder
             array('role_id' => '9', 'menu_id' => $zarpeInternacional['id']),
             array('role_id' => '10', 'menu_id' => $zarpeInternacional['id']),
             array('role_id' => '11', 'menu_id' => $zarpeInternacional['id']),
-
-            array('role_id' => '1', 'menu_id' => $busquedaPermisos['id']),
-            array('role_id' => '12', 'menu_id' => $busquedaPermisos['id']),
-            array('role_id' => '13', 'menu_id' => $busquedaPermisos['id']),
-            array('role_id' => '14', 'menu_id' => $busquedaPermisos['id']),
-
         ];
         DB::table('menus_roles')->insert($menuRols2);
     }

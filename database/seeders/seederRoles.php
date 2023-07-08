@@ -25,9 +25,6 @@ class seederRoles extends Seeder
             'Jefe de Delegación',
             'Operaciones Capitanía',
             'Operaciones Sede Central',
-            'Supervisor Zarpes',
-            'Consulta Zarpes Simple',
-            'Consulta Zarpes',
         ];
 
         foreach($roles as $role){

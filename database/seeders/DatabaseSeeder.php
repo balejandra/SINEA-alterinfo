@@ -26,7 +26,9 @@ class DatabaseSeeder extends Seeder
             DescripcionNavegacionSeeder::class,
             PaisesSeeder::class,
             CertificadoSeeder::class,
-            TipoZarpesSeeder::class
+            TipoZarpesSeeder::class,
+            BusquedaPermisosSeeder::class
+
         ]);
     }
 }

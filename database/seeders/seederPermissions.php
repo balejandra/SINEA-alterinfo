@@ -139,15 +139,6 @@ class seederPermissions extends Seeder
             'eliminar-certificado',
             'listar-certificado',
             'crear-certificado',
-
-            //Permisos para busquedas
-            'show-busqueda',
-            'estadia-busqueda',
-            'zarpesN-busqueda',
-            'zarpesI-busqueda'
-
-
-
         ];
 
         foreach ($permissions as $permission) {
