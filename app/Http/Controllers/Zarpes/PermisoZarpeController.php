@@ -291,8 +291,8 @@ class PermisoZarpeController extends Controller
                                     break;
                                 case "ASIGNACIÓN DE NÚMERO ISMM":
                                     $val3 = true;
-                                    $nroCorrelativos["numeroIsmm"]=$validacionSgm[$i]->nro_correlativo;
-                                    $fechavenc["fecha_vencimientoismm"]=$validacionSgm[$i]->fecha_vencimiento;
+                                    $nroCorrelativos["numeroIsmm"] = $validacionSgm[$i]->nro_correlativo;
+                                    $fechavenc["fecha_vencimientoismm"] = $validacionSgm[$i]->fecha_vencimiento;
                                     break;
                             }
                         }
@@ -346,8 +346,8 @@ class PermisoZarpeController extends Controller
             return view('zarpes.permiso_zarpe.nacional.create-step-two')
                 ->with('paso', 2)
                 ->with('titulo', $this->titulo)
-                ->with('siglas',$siglas)
-                ->with('matriculaActual',$matriculaActual);
+                ->with('siglas', $siglas)
+                ->with('matriculaActual', $matriculaActual);
         } else {
             $validation['UAB'] = $request->input('UAB', []);
             $validation['eslora'] = $request->input('eslora', []);
@@ -723,14 +723,14 @@ class PermisoZarpeController extends Controller
             $validation = json_decode($request->session()->get('validacion'), true);
 
             $tripulantes = $request->session()->get('tripulantes');
-          //  $user2=$tripulantes->nro_doc;
-         //   dd($tripulantes);
+            //  $user2=$tripulantes->nro_doc;
+            //   dd($tripulantes);
             $this->step = 6;
 
             return view('zarpes.permiso_zarpe.create-step-six')->with('paso', $this->step)
                 ->with('passengers', $passengers)
                 ->with('validation', $validation)
-                ->with('tripulantes',$tripulantes)
+                ->with('tripulantes', $tripulantes)
                 ->with('titulo', $this->titulo);
         } else {
             return redirect(route('permisoszarpes.createStepOne'));
@@ -1037,16 +1037,13 @@ class PermisoZarpeController extends Controller
                     } else {
                         $borrado = true;
                         array_push($elim, $pasajeros[$i]['nro_doc']);
-
                     }
-
                 }
                 $pasajeros = $pass;
                 $request->session()->put('pasajeros', $pasajeros);
                 $validation['cantPassAbordo'] = abs(count($tripulantes) + count($pasajeros));
                 $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
                 $request->session()->put('validacion', json_encode($validation));
-
             }
 
         }
@@ -1075,7 +1072,6 @@ class PermisoZarpeController extends Controller
                         //   print_r($value);
                         if ($value['funcion'] == 'Capitán') {
                             $capitanExiste = true;
-
                         }
                     }
                 }
@@ -1133,26 +1129,23 @@ class PermisoZarpeController extends Controller
                 ];
 
                 if (is_array($tripulantes)) {
-                    for ($i = 0; $i < count($tripulantes); $i++) {
+                    for ($i = 0, $iMax = count($tripulantes); $i < $iMax; $i++) {
                         $indice = array_search($cedula, $tripulantes[$i], false);
 
                         if ($indice != false) {
                             $indice = true;
                         }
                     }
-
                 } else {
                     $indice = false;
                     $tripulantes = [];
                 }
-
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
                 $fecha_vence = strtotime($InfoMarino[0]->fecha_vencimiento);
 
                 if ($InfoMarino[0]->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
                     $InfoMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
-
 
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
                         ->Join('tripulantes', 'permiso_zarpes.id', '=', 'tripulantes.permiso_zarpe_id')
@@ -1188,14 +1181,12 @@ class PermisoZarpeController extends Controller
                         } else {
                             $InfoMarino = "FoundButNotPerrmision";
                         }
-
                     }
                 }
             }
-            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime,$trip];
+            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime];
             echo json_encode($return);
         }
-
     }
 
     public function marinoExtranjero(Request $request)
@@ -1317,9 +1308,7 @@ class PermisoZarpeController extends Controller
                         } else {
                             $InfoMarino = "FoundButMaxTripulationLimit";
                         }
-
                     }
-
                 } else {
                     $tripulantes = [];
                     array_push($tripulantes, $trip);
@@ -1331,37 +1320,17 @@ class PermisoZarpeController extends Controller
                     $InfoMarino = "OK";
                     $vj = [true];
                 }
-
-
             }
-
-
             $return = [$tripulantes, $vj, '', $InfoMarino, $validation['cant_pasajeros'], $countTripulantes, $validation['pasajerosRestantes'], $validation['cantPassAbordo']];
             echo json_encode($return);
-
         }
-
-
     }
-
 
     public function validarMarino(Request $request)
     {
         $cedula = $_REQUEST['cedula'];
-        // $fecha = $_REQUEST['fecha'];
         $cap = $_REQUEST['cap'];
-
         $vj = [];
-        /*$newDate = date("d/m/Y", strtotime($fecha));
-        $newDate2 = date("d-m-Y", strtotime($fecha));
-        $newDate3 = date("Y-d-m", strtotime($fecha));
-        $data = Saime_cedula::where('cedula', $cedula)
-            ->whereIn('fecha_nacimiento', [$newDate,$newDate2,$newDate3])
-            ->get();
-
-        if (is_null($data->first())) {
-            $data2 = "saimeNotFound"; // no encontrado en saime
-        } else {*/
         $fechav = LicenciasTitulosGmar::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
 
         $data2 = LicenciasTitulosGmar::where('fecha_vencimiento', $fechav[0]->fechav)->where('ci', $cedula)->get()->map(function ($reporte) {
@@ -1369,7 +1338,7 @@ class PermisoZarpeController extends Controller
             $data2->fecha_emision = $date->format('d') . '-' . $date->format('m') . '-' . $date->format('Y');
 
             return $data2;
-        });;
+        });
         if (is_null($data2->first())) {
             $data2 = "gmarNotFound"; // no encontrado en Gmar
         } else {
@@ -1395,8 +1364,6 @@ class PermisoZarpeController extends Controller
                 }
             }
         }
-
-//        }
         $return = [$data2, $vj];
         echo json_encode($return);
     }
@@ -1422,7 +1389,6 @@ class PermisoZarpeController extends Controller
 
         return $codigo;
     }
-
 
     public function updateStatus($id, $status, $establecimiento)
     {
@@ -1763,51 +1729,51 @@ class PermisoZarpeController extends Controller
 
                 break;
             case 'Primer Oficial de Navegación':
-                if ($capitan=='SI') {
+                if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 3000) {
                         $return = [true];
                     } else {
                         $return = [false];
                     }
-                }else{
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
 
                 break;
             case 'Segundo Oficial de Navegación':
-                if ($capitan=='SI') {
+                if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 500) {
                         $return = [true];
                     } else {
                         $return = [false];
                     }
-                }else{
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
                 break;
             case 'Capitán de Yate':
-                if ($capitan=='SI') {
+                if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 300) {
                         $return = [true];
                     } else {
                         $return = [false];
                     }
-                }else {
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
                 break;
             case 'Capitán Costanero':
                 $coordenadas = [];
-                if ($capitan=='SI') {
+                if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 3000) {
                         $return = [true, $coordenadas];
                     } else {
                         $return = [false, $coordenadas];
                     }
-                }else{
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
                 break;
@@ -1819,8 +1785,8 @@ class PermisoZarpeController extends Controller
                     } else {
                         $return = [false, $coordenadas];
                     }
-                }else {
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
                 break;
@@ -1832,8 +1798,8 @@ class PermisoZarpeController extends Controller
                     } else {
                         $return = [false, $coordenadas];
                     }
-                }else{
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
                 break;
@@ -1845,8 +1811,8 @@ class PermisoZarpeController extends Controller
                     } else {
                         $return = [false, $coordenadas, 1];
                     }
-                }else{
-                    $return =[true];
+                } else {
+                    $return = [true];
                 }
 
                 break;
@@ -1857,7 +1823,7 @@ class PermisoZarpeController extends Controller
                     } else {
                         $return = [false];
                     }
-                }else{
+                } else {
                     $return = [true];
                 }
 
@@ -1869,7 +1835,7 @@ class PermisoZarpeController extends Controller
                     } else {
                         $return = [false];
                     }
-                }else {
+                } else {
                     $return = [true];
                 }
 

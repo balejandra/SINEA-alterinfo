@@ -1859,21 +1859,17 @@ function getMarinos(pass) {
 
                         }
                      }
-
                 break;
                 default:
-
                 break;
             }
-
         })
-
-        // This will be called on error
         .fail(function (response) {
+            console.log("Error Fail: ");
             console.log(response);
             console.log('falló validación de Jerarquización ZI');
+            msj.innerHTML="<div class='alert alert-danger'>La cédula suministrada no pertenece a un marino venezolano.</div>";
         });
-
     }
 }
 
