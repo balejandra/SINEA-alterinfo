@@ -1056,6 +1056,7 @@ class PermisoZarpeController extends Controller
         $funcion = $_REQUEST['funcion'];
         $vj = [];
         $indice = false;
+        $trip=[];
         $tripulantes = $request->session()->get('tripulantes');
         $capitanExiste = false;
 
@@ -1184,7 +1185,7 @@ class PermisoZarpeController extends Controller
                     }
                 }
             }
-            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime];
+            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime,$trip];
             echo json_encode($return);
         }
     }

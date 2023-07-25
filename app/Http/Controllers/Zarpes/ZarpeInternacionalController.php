@@ -854,6 +854,8 @@ class ZarpeInternacionalController extends Controller
 
         $vj = [];
         $indice = false;
+        $marinoAsignado2 = "";
+        $marinoAsignado = "";
         $tripulantes = $request->session()->get('tripulantes');
         $capitanExiste = false;
         $pasajeros = $request->session()->get('pasajeros');
@@ -883,7 +885,6 @@ class ZarpeInternacionalController extends Controller
                 break;
         }
 
-
         if ($capitanExiste) {
             $return = [$tripulantes, "", "", 'capitanExiste', ""];
             echo json_encode($return);
@@ -895,8 +896,7 @@ class ZarpeInternacionalController extends Controller
             //  $request->session()->put('tripulantes', '');
             if (is_null($InfoMarino->first())) {
                 $InfoMarino = "gmarNotFound"; // no encontrado en Gmar
-                $marinoAsignado2 = "";
-                $marinoAsignado = "";
+
             } else {
                 $emision = explode(' ', $InfoMarino[0]->fecha_emision);
                 list($ano, $mes, $dia) = explode("-", $emision[0]);
@@ -908,19 +908,6 @@ class ZarpeInternacionalController extends Controller
                     $fechaNacV = '';
                     $sexoV = "";
                 }
-                /*$trip = [
-                "permiso_zarpe_id" => '',
-                "ctrl_documento_id" => $InfoMarino[0]->id,
-                "capitan" => $cap,
-                "nombre" => $InfoMarino[0]->nombre." ".$InfoMarino[0]->apellido,
-                "cedula" => $InfoMarino[0]->ci,
-                "fecha_vencimiento" => $InfoMarino[0]->fecha_vencimiento,
-                "fecha_emision" =>$emision[0],
-                "documento" => $InfoMarino[0]->documento,
-                "funcion"  => $funcion,
-                "solicitud"  => $InfoMarino[0]->solicitud,
-                ];*/
-
                 $trip = [
                     "permiso_zarpe_id" => '',
                     "nombres" => $InfoMarino[0]->nombre,

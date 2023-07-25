@@ -647,16 +647,18 @@ function getMarinosZI(pass) {
                                         msj.innerHTML='<div class="alert alert-danger">El marino de C.I.'+nrodoc+' no esta permisado para ser capitán esta embarcación.</div>' ;
                             }else{
                                         msj.innerHTML='<div class="alert alert-danger">El marino de C.I.'+nrodoc+' no esta permisado para tripular esta embarcación.</div>' ;
-
                         }
                 break;
                 case 'gmarNotFound':
                     msj.innerHTML="<div class='alert alert-danger'>La cédula suministrada no pertenecea a un marino venezolano.</div>";
 
                 break;
-                case 'FoundButAssigned':
-                            msj.innerHTML='<div class="alert alert-danger">El tripulante C.I. / Pasaporte '+nrodoc+' se encuentra asignado a una embarcación que tiene un zarpe programado o en curso actualmente</div>' ;
+                case 'FoundButDefeated':
+                    msj.innerHTML='<div class="alert alert-danger">El tripulante debe Solicitar Renovación de su Documento ante Gente de Mar</div>' ;
                 break;
+                case 'FoundButAssigned':
+                    msj.innerHTML='<div class="alert alert-danger">El tripulante C.I. / Pasaporte '+nrodoc+' se encuentra asignado a una embarcación que tiene un zarpe programado o en curso actualmente</div>' ;
+                    break;
                 case 'OK':
 
                   //  let cantidad=respuesta1.length;
