@@ -1544,7 +1544,7 @@ function getMarinos(pass) {
                         msj.innerHTML = '<div class="alert alert-danger">El tripulante C.I. / Pasaporte ' + nrodoc + ' se encuentra asignado a una embarcación que tiene un zarpe programado o en curso actualmente</div>';
                         break;
                     case 'FoundButDefeated':
-                        msj.innerHTML = '<div class="alert alert-danger">El tripulante debe Solicitar Renovación de su Documento ante Gente de Mar</div>';
+                        msj.innerHTML = '<div class="alert alert-danger">El tripulante debe Solicitar Renovación de su Documento ante Gente de Mar.</div>';
                         break;
                     case 'FoundInList':
                         msj.innerHTML = '<div class="alert alert-danger">El tripulante con el número de documento ' + nrodoc + ' ya se encuentra en el listado, por favor verifique.</div>';

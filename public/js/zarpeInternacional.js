@@ -342,7 +342,7 @@ function getMarinosZI(pass) {
 
                         break;
                     case 'FoundButDefeated':
-                        msj.innerHTML = '<div class="alert alert-danger">El tripulante debe Solicitar Renovación de su Documento ante Gente de Mar</div>';
+                        msj.innerHTML = '<div class="alert alert-danger">El tripulante debe Solicitar Renovación de su Documento ante Gente de Mar.</div>';
                         break;
                     case 'FoundButAssigned':
                         msj.innerHTML = '<div class="alert alert-danger">El tripulante C.I. / Pasaporte ' + nrodoc + ' se encuentra asignado a una embarcación que tiene un zarpe programado o en curso actualmente</div>';
