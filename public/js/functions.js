@@ -1457,6 +1457,7 @@ function AddPasportsMarinosZN() {
 
 
 function getMarinos(pass) {
+    console.log('tripulante')
     let funcion = document.getElementById('funcion').value;
     let tipodoc = document.getElementById('tipodoc').value;
     let nrodoc = document.getElementById('nrodoc').value;

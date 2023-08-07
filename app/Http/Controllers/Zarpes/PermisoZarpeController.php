@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Zarpes;
 
 use App\Http\Controllers\Controller;
+use App\Models\Gmar\LicenciasTitulosGmar01;
 use App\Models\Publico\CapitaniaUser;
 use App\Models\Renave\Renave_data;
 use App\Models\User;
@@ -19,6 +20,8 @@ use App\Models\Zarpes\TipoZarpe;
 use App\Models\Zarpes\EquipoPermisoZarpe;
 
 use App\Models\Zarpes\ZarpeRevision;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Request;
 use App\Models\Publico\Saime_cedula;
 use App\Models\Gmar\LicenciasTitulosGmar;
@@ -1059,6 +1062,7 @@ class PermisoZarpeController extends Controller
         $trip=[];
         $tripulantes = $request->session()->get('tripulantes');
         $capitanExiste = false;
+        $ultimoRegistroMarino="";
 
         $pasajeros = $request->session()->get('pasajeros');
         if (!is_array($pasajeros)) {
@@ -1076,31 +1080,42 @@ class PermisoZarpeController extends Controller
                         }
                     }
                 }
+                break;
 
-                break;
             case 'Motorista':
-                $cap = "NO";
+                $cap = "MOTORISTA";
                 break;
+
             case 'Marino':
-                $cap = "NO";
+                $cap = "MARINO";
                 break;
         }
 
-        if ($capitanExiste) {
+        if ($capitanExiste) {// SE INTENTA INTRODUCIR OTRO MARINO COMO CAPITAN YA CARGADO UNO
             $return = [$tripulantes, "", "", 'capitanExiste', ""];
             echo json_encode($return);
-        } else {
+        } else { //NO EXISTE UN CAPITAN SE CONTINUA LA VALIDACION
             $validation = json_decode($request->session()->get('validacion'), true);
+            //BUSQUEDA EN LICENCIASTITULOSGMAR
             $fechav = LicenciasTitulosGmar::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
             $InfoMarino = LicenciasTitulosGmar::where('fecha_vencimiento', $fechav[0]->fechav)->where('ci', $cedula)->get();
+
+            //BUSQUEDA EN LICENCIASTITULOSGMAR01
+            $fechav01 = LicenciasTitulosGmar01::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
+            $InfoMarino01 = LicenciasTitulosGmar01::where('fecha_vencimiento', $fechav01[0]->fechav)->where('ci', $cedula)->get();
+
+            $mergedData = $InfoMarino->union($InfoMarino01);
+            //BUSQUEDA EN SAIME
             $infoSaime = Saime_cedula::where('cedula', $cedula)->get();
-            //  $request->session()->put('tripulantes', '');
-            if (is_null($InfoMarino->first())) {
-                $InfoMarino = "gmarNotFound"; // no encontrado en Gmar
+              //  dd($mergedData);
+            if ($mergedData->isEmpty()) {
+                $ultimoRegistroMarino = "gmarNotFound"; // no encontrado en Gmar
             } else {
-                $emision = explode(' ', $InfoMarino[0]->fecha_emision);
-                list($ano, $mes, $dia) = explode("-", $emision[0]);
-                $emision[0] = $dia . '/' . $mes . '/' . $ano;
+                // Unir las colecciones en una sola variable
+
+                $ultimoRegistroMarino = $mergedData->last();
+                $fechaemision=$this->convertirFecha($ultimoRegistroMarino->fecha_emision);
+
                 if (!is_null($infoSaime->first())) {
                     $fehcaNacV = $infoSaime[0]->fecha_nacimiento;
                     $sexoV = $infoSaime[0]->sexo;
@@ -1111,22 +1126,21 @@ class PermisoZarpeController extends Controller
 
                 $trip = [
                     "permiso_zarpe_id" => '',
-                    "ctrl_documento_id" => $InfoMarino[0]->id,
+                    "ctrl_documento_id" => $ultimoRegistroMarino->id,
                     "capitan" => $cap,
-                    "nombres" => $InfoMarino[0]->nombre,
-                    "apellidos" => $InfoMarino[0]->apellido,
-                    "nro_doc" => $InfoMarino[0]->ci,
+                    "nombres" => $ultimoRegistroMarino->nombre,
+                    "apellidos" => $ultimoRegistroMarino->apellido,
+                    "nro_doc" => $ultimoRegistroMarino->ci,
                     "tipo_doc" => 'V',
                     "rango" => "",
                     "funcion" => $funcion,
                     "sexo" => $sexoV,
                     "fecha_nacimiento" => $fehcaNacV,
                     "doc" => $_REQUEST['doc'],
-                    "documento_acreditacion" => $InfoMarino[0]->documento,
-                    "capitan" => $cap,
-                    "fecha_emision" => $emision[0],
-                    "solicitud" => $InfoMarino[0]->solicitud,
-                    "nro_ctrl" => $InfoMarino[0]->nro_ctrl,
+                    "documento_acreditacion" => $ultimoRegistroMarino->documento,
+                    "fecha_emision" => $fechaemision,
+                    "solicitud" => $ultimoRegistroMarino->solicitud,
+                    "nro_ctrl" => $ultimoRegistroMarino->nro_ctrl,
                 ];
 
                 if (is_array($tripulantes)) {
@@ -1142,12 +1156,11 @@ class PermisoZarpeController extends Controller
                     $tripulantes = [];
                 }
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
-                $fecha_vence = strtotime($InfoMarino[0]->fecha_vencimiento);
+                $fecha_vence = strtotime($ultimoRegistroMarino->fecha_vencimiento);
 
-                if ($InfoMarino[0]->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
-                    $InfoMarino = "FoundButDefeated"; //encontrado pero documento vencido
+                if ($ultimoRegistroMarino->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
+                    $ultimoRegistroMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
-
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
                         ->Join('tripulantes', 'permiso_zarpes.id', '=', 'tripulantes.permiso_zarpe_id')
                         ->where('tripulantes.nro_doc', $cedula)
@@ -1161,9 +1174,9 @@ class PermisoZarpeController extends Controller
                         ->get();
 
                     if (count($marinoAsignado) > 0 || count($marinoAsignado2) > 0) {
-                        $InfoMarino = "FoundButAssigned"; //encontrado pero asignado a otro barco
+                        $ultimoRegistroMarino = "FoundButAssigned"; //encontrado pero asignado a otro barco
                     } else {
-                        $vj = $this->validacionJerarquizacion($InfoMarino[0]->documento, $cap);
+                        $vj = $this->validacionJerarquizacion($ultimoRegistroMarino->documento, $cap);
 
                         if ($indice == false && $vj[0] == true) {
                             if (count($tripulantes) <= $validation['cant_pasajeros'] - 1) {
@@ -1171,24 +1184,25 @@ class PermisoZarpeController extends Controller
                                 $request->session()->put('tripulantes', $tripulantes);
                                 $validation['cantPassAbordo'] = abs(count($tripulantes) + count($pasajeros));
                                 $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
-                                $InfoMarino = 'OK';
+                                $ultimoRegistroMarino = 'OK';
                                 $request->session()->put('validacion', json_encode($validation));
                             } else {
-                                $InfoMarino = "FoundButMaxTripulationLimit";
+                                $ultimoRegistroMarino = "FoundButMaxTripulationLimit";
                             }
 
                         } else if ($indice == true) {
-                            $InfoMarino = "FoundInList";
+                            $ultimoRegistroMarino = "FoundInList";
                         } else {
-                            $InfoMarino = "FoundButNotPerrmision";
+                            $ultimoRegistroMarino = "FoundButNotPerrmision";
                         }
                     }
                 }
             }
-            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime,$trip];
+            $return = [$tripulantes, $vj, $indice, $ultimoRegistroMarino, $validation['pasajerosRestantes'], $validation['cant_pasajeros'], $validation['cantPassAbordo'], $infoSaime,$trip];
             echo json_encode($return);
         }
     }
+
 
     public function marinoExtranjero(Request $request)
     {
@@ -1727,8 +1741,8 @@ class PermisoZarpeController extends Controller
         switch ($documento) {
             case 'Capitán de Altura':
                 $return = [true, $documento];
-
                 break;
+
             case 'Primer Oficial de Navegación':
                 if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 3000) {
@@ -1739,9 +1753,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
-
                 break;
+
             case 'Segundo Oficial de Navegación':
                 if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 500) {
@@ -1753,6 +1766,7 @@ class PermisoZarpeController extends Controller
                     $return = [true];
                 }
                 break;
+
             case 'Capitán de Yate':
                 if ($capitan == 'SI') {
                     if ($validacion['UAB'] <= 300) {
@@ -1763,8 +1777,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Capitán Costanero':
                 $coordenadas = [];
                 if ($capitan == 'SI') {
@@ -1776,8 +1790,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Patrón de Primera':
                 $coordenadas = [];
                 if ($capitan === 'SI') {
@@ -1789,8 +1803,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Patrón Deportivo de Primera':
                 $coordenadas = [];
                 if ($capitan === 'SI') {
@@ -1802,8 +1816,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Patrón de Segunda':
                 $coordenadas = [];
                 if ($capitan === 'SI') {
@@ -1815,8 +1829,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Patrón Deportivo de Segunda':
                 if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 40) {
@@ -1827,8 +1841,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Patrón Deportivo de Tercera':
                 if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 10) {
@@ -1839,20 +1853,27 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [true];
                 }
-
                 break;
+
             case 'Capitán de Pesca':
             case 'Oficial de Pesca':
             case 'Jefe de Máquinas':
             case 'Tercer Oficial de Navegación':
-
                 if ($capitan == "SI") {
                     $return = [false];
                 } else {
                     $return = [true];
                 }
-
                 break;
+
+            case 'Q1':
+                if ($capitan==='MARINO') {
+                    $return=[true];
+                }else {
+                    $return=[false];
+                }
+                break;
+
             case 'Patrón Artesanal':
                 if ($capitan == "NO") {
                     if ($validacion['eslora'] <= 24) {
@@ -1863,9 +1884,8 @@ class PermisoZarpeController extends Controller
                 } else {
                     $return = [false];
                 }
-
-
                 break;
+
             case 'Segundo Oficial de Máquinas':
             case 'Primer Oficial de Máquinas':
                 if ($capitan == "SI") {
@@ -1877,10 +1897,9 @@ class PermisoZarpeController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Motorista de Primera':
                 $coordenadas = [];
                 if ($capitan == "SI") {
@@ -1892,10 +1911,9 @@ class PermisoZarpeController extends Controller
                         $return = [false, $coordenadas];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Motorista de Segunda':
                 $coordenadas = [];
                 if ($capitan == "SI") {
@@ -1907,10 +1925,9 @@ class PermisoZarpeController extends Controller
                         $return = [false, $coordenadas];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Oficial de Máquinas de Pesca':
             case 'Jefe de Máquinas de Pesca':
                 if ($capitan == "SI") {
@@ -1922,10 +1939,9 @@ class PermisoZarpeController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Tercer Oficial de Máquinas':
                 if ($capitan == "SI") {
                     $return = [false];
@@ -1936,9 +1952,7 @@ class PermisoZarpeController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
                 break;
 
             default:
@@ -1948,7 +1962,6 @@ class PermisoZarpeController extends Controller
         return $return;
     }
 
-
     public function limpiarVariablesSession()
     {
         Session::forget('pasajeros');
@@ -1957,7 +1970,6 @@ class PermisoZarpeController extends Controller
         Session::forget('solicitud');
         $this->step = 1;
     }
-
 
     public function BuscaEstablecimientosNauticos(Request $request)
     {
@@ -2127,10 +2139,7 @@ class PermisoZarpeController extends Controller
                 $info = "ExistInPassengerList";
 
             }
-
         }
-
-
         $resp = [$info, $pass, count($pasajeros), $validation['pasajerosRestantes'], $validation['pasajerosRestantes']];
         echo json_encode($resp);
 
@@ -2138,9 +2147,6 @@ class PermisoZarpeController extends Controller
 
     public function AddDocumentosMarinosZN(Request $request)
     {
-
-
-        $pasaporte = '';
         if ($request->hasFile('doc')) {
 
             $pasaporte = $request->file('doc');
@@ -2153,9 +2159,7 @@ class PermisoZarpeController extends Controller
             $resp1 = ['errorFile', ''];
         }
 
-        $docAcreditacion = "";
         if ($request->hasFile('documentoAcreditacion')) {
-
             $docAcreditacion = $request->file('documentoAcreditacion');
             $fileNameDocAc = date('dmYGi') . $docAcreditacion->getClientOriginalName();
             $fileNameDocAcNew = str_replace(' ', '', $fileNameDocAc);
@@ -2166,8 +2170,22 @@ class PermisoZarpeController extends Controller
             $resp2 = ['errorFile', ''];
         }
         echo json_encode([$resp1, $resp2]);
-
     }
 
+    function convertirFecha($cadenaFecha)
+    {
+        try {
+            // Eliminar cualquier información de hora y minutos de la cadena
+            $cadenaFecha = preg_replace('/\s(\d+:\d+(:\d+)?(\s+)?(AM|PM)?)$/', '', $cadenaFecha);
 
+            // Parsear la cadena de fecha utilizando Carbon
+            $fechaCarbon = Carbon::parse($cadenaFecha);
+
+            // Formatear la fecha en el formato deseado (d/m/Y)
+            $fechaFormateada = $fechaCarbon->format('d/m/Y');
+            return $fechaFormateada;
+        } catch (\Exception $e) {
+            return $cadenaFecha;
+        }
+    }
 }

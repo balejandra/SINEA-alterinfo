@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Zarpes;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\Gmar\LicenciasTitulosGmar01;
 use App\Models\Publico\CapitaniaUser;
 use App\Models\Renave\Renave_data;
 use App\Models\User;
@@ -164,15 +165,11 @@ class ZarpeInternacionalController extends Controller
             return redirect()->route('zarpeInternacional.CreateStepTwo')->with('paso', $this->step);
         } else {
             return redirect()->route('zarpeInternacional.CreateStepTwoE')->with('paso', $this->step);
-
         }
-
     }
-
 
     public function createStepTwo(Request $request)
     {
-
         $this->step = 2;
         $solicitud = json_decode(session('solicitud'));
         $siglas = Capitania::all();
@@ -183,7 +180,6 @@ class ZarpeInternacionalController extends Controller
         }
 
         return view('zarpes.zarpe_internacional.nacional.create-step-two')->with('paso', $this->step)->with('stepName', "Matrícula")->with("siglas", $siglas)->with("matriculaActual", $matriculaActual)->with('titulo', $this->titulo);
-
     }
 
     public function validationStepTwo(Request $request)
@@ -220,7 +216,7 @@ class ZarpeInternacionalController extends Controller
                     $obligatorio = CertificadoObligatorio::all();
                     //dd($obligatorio[1]);
                     if ($obligatorio) {
-                        for ($x = 0; $x < count($obligatorio); $x++) {
+                        for ($x = 0, $xMax = count($obligatorio); $x < $xMax; $x++) {
                             $pr = Renave_data::where('matricula_actual', $matricula)->value($obligatorio[$x]->parametro_embarcacion);
                             if ($pr <= $obligatorio[$x]->cantidad_comparacion) {
                                 // dd('aq');
@@ -233,7 +229,6 @@ class ZarpeInternacionalController extends Controller
                                     $val3 = true;
                                     $nroCorrelativos["numeroIsmm"] = "NO REQUIERE";
                                     $fechavenc["fecha_vencimientoismm"] = "NO REQUIERE";
-
                                 }
                             }
                         }
@@ -289,7 +284,6 @@ class ZarpeInternacionalController extends Controller
                                     break;
                             }
                         }
-
                         $data2 = [
                             "data" => $data,
                             "validacionSgm" => [$val1, $val2, $val3, $nroCorrelativos, $fechavenc],
@@ -298,19 +292,13 @@ class ZarpeInternacionalController extends Controller
                     } else {
                         echo "noEncontradoSgm";
                     }
-
                 }
             }
-
-
         }
-
     }
-
 
     public function permissionCreateStepTwo(Request $request)
     {
-
         $validatedData = $request->validate([
             'matricula' => 'required',
             //  'UAB' => 'required',
@@ -349,10 +337,8 @@ class ZarpeInternacionalController extends Controller
                 $validation[$clave] = $cargo;
             }
 
-
             $request->session()->put('validacion', json_encode($validation));
             // dd($request->session()->get('validacion'));
-
             $solicitud = json_decode($request->session()->get('solicitud'), true);
             $solicitud['matricula'] = $request->input('matricula', []);
             $solicitud['permiso_estadia_id'] = null;
@@ -360,29 +346,20 @@ class ZarpeInternacionalController extends Controller
             // dd($solicitud);
             return redirect()->route('zarpeInternacional.createStepThree');
         }
-
-
     }
-
 
     public function createStepTwoE(Request $request)
     {
-        // $this->SendMail(42,1);
-
         $this->step = 2;
-
         return view('zarpes.zarpe_internacional.extranjera.create-step-two')->with('paso', $this->step)->with('titulo', $this->titulo);
-
     }
 
     public function validationStepTwoE(Request $request)
     {
         $permiso = $_REQUEST['permiso'];
-
         $permisoEstadia = PermisoEstadia::where('user_id', auth()->id())->where('nro_solicitud', $permiso)->where('status_id', 1)->get();
 
         if (is_null($permisoEstadia->first())) {
-
             echo json_encode("sinCoincidencias");
         } else {
             $permisoZ = PermisoZarpe::select("matricula")->where('user_id', auth()->id())->where('matricula', $permisoEstadia[0]->nro_registro)->whereIn('status_id', [1, 3, 5])->get();
@@ -392,15 +369,12 @@ class ZarpeInternacionalController extends Controller
             } else {
                 echo json_encode($permisoEstadia);
             }
-
         }
-
     }
 
 
     public function permissionCreateSteptwoE(Request $request)
     {
-
         $permiso = $request->input('permiso');
         $validatedData = $request->validate([
 
@@ -423,7 +397,6 @@ class ZarpeInternacionalController extends Controller
 
         $valida = json_decode($request->session()->get('validacion'), true);
 
-
         $valida["cant_tripulantes"] = $permisoEstadia[0]->cant_tripulantes;
         $valida["cant_pasajeros"] = $permisoEstadia[0]->cant_pasajeros;
         $valida["pasajerosRestantes"] = $permisoEstadia[0]->cant_pasajeros;
@@ -432,28 +405,20 @@ class ZarpeInternacionalController extends Controller
         $request->session()->put('validacion', json_encode($valida));
 
         return redirect()->route('zarpeInternacional.createStepThree');
-
     }
-
 
     public function createStepThree(Request $request)
     {
         $solicitud = json_decode(session('solicitud'));
-
         $coordsCapsAsign = CoordenadasCapitania::select('coordenadas_capitanias.capitania_id')->distinct()->get();
         $capitania = Capitania::whereIn('id', $coordsCapsAsign)->get();
 
         $solicitud = json_decode($request->session()->get('solicitud'), true);
         $bandera = $solicitud['bandera'];
         $TipoZarpes = TipoZarpe::all();
-        //$capitania = Capitania::all();
-        // $descripcionNavegacion = DescripcionNavegacion::all();
         $valida = json_decode($request->session()->get('validacion'), true);
-
         $this->step = 3;
-
         return view('zarpes.zarpe_internacional.create-step-three')->with('paso', $this->step)->with('TipoZarpes', $TipoZarpes)->with('capitanias', $capitania)->with('bandera', $bandera)->with('titulo', $this->titulo);
-
     }
 
     public function permissionCreateStepThree(Request $request)
@@ -461,7 +426,6 @@ class ZarpeInternacionalController extends Controller
         $validatedData = $request->validate([
             'tipo_de_navegacion' => 'required',
             'capitania' => 'required',
-
         ],
             [
                 'tipo_de_navegacion.required' => 'El campo Tipo de Navegación es obligatorio',
@@ -479,7 +443,6 @@ class ZarpeInternacionalController extends Controller
         $this->step = 4;
 
         return redirect()->route('zarpeInternacional.createStepFour');
-
     }
 
     public function createStepFour(Request $request)
@@ -490,13 +453,11 @@ class ZarpeInternacionalController extends Controller
 
         $this->step = 4;
         return view('zarpes.zarpe_internacional.create-step-four')->with('paso', $this->step)->with('EstNauticos', $EstNauticos)->with('paises', $paises)->with('titulo', $this->titulo);
-
     }
 
     public function permissionCreateStepFour(Request $request)
     {
         $solicitud = json_decode($request->session()->get('solicitud'), true);
-
 
         $validatedData = $request->validate([
             'establecimientoNáuticoOrigen' => 'required',
@@ -509,8 +470,6 @@ class ZarpeInternacionalController extends Controller
                 'estNauticoDestinoZI.required' => 'El campo Establecimiento naútico de destino es requerido'
 
             ]);
-
-
         $solicitud['establecimiento_nautico_id'] = $request->input('establecimientoNáuticoOrigen');
         $solicitud['establecimiento_nautico_destino_id'] = $request->input('establecimientoNáuticoOrigen');
         $solicitud['fecha_hora_salida'] = $request->input('salida');
@@ -528,21 +487,16 @@ class ZarpeInternacionalController extends Controller
     public function createStepFive(Request $request)
     {
         $solicitud = json_decode($request->session()->get('solicitud'), true);
-
         $codigo = $this->codigo($solicitud);
 
         $validation = json_decode($request->session()->get('validacion'), true);
         $tripulantes = $request->session()->get('tripulantes');
-
         $this->step = 5;
         return view('zarpes.zarpe_internacional.create-step-five')->with('paso', $this->step)->with('tripulantes', $tripulantes)->with('validacion', $validation)->with('codigo', $codigo)->with('titulo', $this->titulo);
-
     }
 
     public function permissionCreateStepFive(Request $request)
     {
-
-
         $validation = json_decode($request->session()->get('validacion'), true);
 
         $tripulantes = $request->session()->get('tripulantes');
@@ -562,7 +516,7 @@ class ZarpeInternacionalController extends Controller
                 $this->step = 6;
                 return redirect()->route('zarpeInternacional.createStepSix');
 
-            } elseif ($capitan < 1) {
+            } else if ($capitan < 1) {
                 $this->step = 5;
                 $mensj = "Debe asignar un capitán para esta embarcación, por favor verifique";
                 return view('zarpes.zarpe_internacional.create-step-five')->with('paso', $this->step)->with('tripulantes', $tripulantes)->with('validacion', $validation)->with('msj', $mensj)->with('titulo', $this->titulo);
@@ -571,7 +525,6 @@ class ZarpeInternacionalController extends Controller
                 $mensj = "No puede asignar más de un capitán para la embarcación";
                 return view('zarpes.zarpe_internacional.create-step-five')->with('paso', $this->step)->with('tripulantes', $tripulantes)->with('validacion', $validation)->with('msj', $mensj)->with('titulo', $this->titulo);
             }
-
 
         } else {
 
@@ -586,15 +539,12 @@ class ZarpeInternacionalController extends Controller
                 $mensj = "Ha ocurrido un error al agregar a los tripulantes, contacte al administrador del sistema";
             }
 
-
             return view('zarpes.zarpe_internacional.create-step-five')->with('paso', $this->step)->with('tripulantes', $tripulantes)->with('validacion', $validation)->with('msj', $mensj)->with('titulo', $this->titulo);
-
         }
     }
 
     public function createStepSix(Request $request)
     {
-
         $passengers = $request->session()->get('pasajeros');
         $validation = json_decode($request->session()->get('validacion'), true);
         $cantPasajeros = $validation['pasajerosRestantes'];
@@ -605,19 +555,15 @@ class ZarpeInternacionalController extends Controller
             ->with('paso', $this->step)
             ->with('passengers', $passengers)
             ->with('validation', $validation)
-            ->with('tripulantes',$tripulantes)
+            ->with('tripulantes', $tripulantes)
             ->with('titulo', $this->titulo);
-
     }
 
     public function permissionCreateStepSix(Request $request)
     {
-
         $this->step = 7;
         return redirect()->route('zarpeInternacional.createStepSeven');
-
     }
-
 
     public function createStepSeven(Request $request)
     {
@@ -629,7 +575,6 @@ class ZarpeInternacionalController extends Controller
         return view('zarpes.zarpe_internacional.create-step-seven')
             ->with('paso', $this->step)
             ->with('equipos', $equipos)->with('titulo', $this->titulo);
-
     }
 
     public function store(Request $request)
@@ -644,9 +589,7 @@ class ZarpeInternacionalController extends Controller
             Flash::error('Debe indicar los equipos que posee a bordo, por favor verifique.');
             return redirect()->route('permisoszarpes.createStepSeven');
         } else {
-
             $bandera = true;
-
             try {
                 DB::beginTransaction();
                 //SOlicitud de zarpe
@@ -658,22 +601,15 @@ class ZarpeInternacionalController extends Controller
                 if ($saveSolicitud == "") {
                     $bandera = false;
                 }
-
-
                 //Tripulantes
                 $tripulantes = $request->session()->get('tripulantes');
 
                 for ($i = 0; $i < count($tripulantes); $i++) {
                     $tripulantes[$i]["permiso_zarpe_id"] = $saveSolicitud->id;
 
-                    /*if (strpos($tripulantes[$i]["fecha_nacimiento"], "/") !== false) {
-                        list($dia, $mes, $ano) = explode("/", $tripulantes[$i]["fecha_nacimiento"]);
-                        $tripulantes[$i]["fecha_nacimiento"]=$ano.'-'.$mes.'-'.$dia;
-                    }*/
                     $trip = TripulanteInternacional::create($tripulantes[$i]);
 
                 }
-
                 //Pasajeros
                 $pasajeros = $request->session()->get('pasajeros');
 
@@ -684,7 +620,6 @@ class ZarpeInternacionalController extends Controller
                         // print_r($pasajeros[$i]); echo "<br>";
                     }
                 }
-
 
                 //Equipos
 
@@ -719,18 +654,15 @@ class ZarpeInternacionalController extends Controller
                                     $listadoEquipos["valores_otros"] = "";
 
                                 }
-
                                 $listEq[$i] = $listadoEquipos;
                                 $i++;
                                 EquipoPermisoZarpe::create($listadoEquipos);
 
                                 $listadoEquipos = ["permiso_zarpe_id" => '', "equipo_id" => '', "cantidad" => '', "otros" => '', "valores_otros" => ''];
                             }
-
                         }
                     }
                 }
-
                 // printf('Bandera::'.$bandera);
                 if ($bandera == true) {
                     DB::commit();
@@ -738,16 +670,12 @@ class ZarpeInternacionalController extends Controller
                     DB::rollback();
                     Flash::error('Ha ocurrido un error al guardar la solicitud, algunos datos no se guardaron.');
                 }
-
-
             } catch (\Exception $e) {
                 DB::rollback();
                 throw $e;
                 Flash::error('Ha ocurrido un error al guardar la solicitud, los datos no se guardaron.');
 
             }
-
-
             $capOrigin = $this->SendMail($saveSolicitud->id, 1, true);
             $caopDestino = $this->SendMail($saveSolicitud->id, 0, false);
 
@@ -756,14 +684,10 @@ class ZarpeInternacionalController extends Controller
             ' . $codigo . '</b> exitosamente y se han enviado los correos de notificación correspondientes');
             } else {
                 Flash::success('Se ha generado la solicitud <b> ' . $codigo . '</b> exitosamente.');
-
             }
-
             $this->limpiarVariablesSession();
             return redirect()->route('zarpeInternacional.index');
         }
-
-
     }
 
     public function consulta2(Request $request)
@@ -787,7 +711,6 @@ class ZarpeInternacionalController extends Controller
                 'errors' => [],
             ], 200);
         }
-
         echo json_encode($data);
     }
 
@@ -795,34 +718,21 @@ class ZarpeInternacionalController extends Controller
     public function validarMarino(Request $request)
     {
         $cedula = $_REQUEST['cedula'];
-        // $fecha = $_REQUEST['fecha'];
         $cap = $_REQUEST['cap'];
 
         $vj = [];
-        /*$newDate = date("d/m/Y", strtotime($fecha));
-        $newDate2 = date("d-m-Y", strtotime($fecha));
-        $newDate3 = date("Y-d-m", strtotime($fecha));
-        $data = Saime_cedula::where('cedula', $cedula)
-            ->whereIn('fecha_nacimiento', [$newDate,$newDate2,$newDate3])
-            ->get();
-
-        if (is_null($data->first())) {
-            $data2 = "saimeNotFound"; // no encontrado en saime
-        } else {*/
         $fechav = LicenciasTitulosGmar::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
 
         $data2 = LicenciasTitulosGmar::where('fecha_vencimiento', $fechav[0]->fechav)->where('ci', $cedula)->get();
         if (is_null($data2->first())) {
             $data2 = "gmarNotFound"; // no encontrado en Gmar
         } else {
-
             $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
             $fecha_vence = strtotime($data2[0]->fecha_vencimiento);
 
             if ($data2[0]->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
                 $data2 = "FoundButDefeated"; //encontrado pero documento vencido
             } else {
-
                 $marinoAsignado = PermisoZarpe::select('zarpe_internacionals.status_id', 'ctrl_documento_id')
                     ->Join('tripulantes', 'zarpe_internacionals.id', '=', 'tripulantes.zarpe_internacional_id')
                     ->where('tripulantes.ctrl_documento_id', '=', $data2[0]->id)
@@ -833,12 +743,9 @@ class ZarpeInternacionalController extends Controller
                     $data2 = "FoundButAssigned";
                 } else {
                     $vj = $this->validacionJerarquizacion($data2[0]->documento, $cap);
-
                 }
             }
         }
-
-//        }
         $return = [$data2, $vj];
         echo json_encode($return);
     }
@@ -848,9 +755,8 @@ class ZarpeInternacionalController extends Controller
         $cedula = $_REQUEST['nrodoc'];
         $funcion = $_REQUEST['funcion'];
         $doc = $_REQUEST['doc'];
-        $nrodoc = $_REQUEST['nrodoc'];
         $docAcreditacion = $_REQUEST['docAcreditacion'];
-
+        $ultimoRegistroMarino = "";
 
         $vj = [];
         $indice = false;
@@ -863,7 +769,6 @@ class ZarpeInternacionalController extends Controller
             $pasajeros = [];
         }
 
-
         switch ($funcion) {
             case 'Capitán':
                 $cap = "SI";
@@ -875,13 +780,13 @@ class ZarpeInternacionalController extends Controller
                         }
                     }
                 }
-
                 break;
             case 'Motorista':
-                $cap = "NO";
+                $cap = "MOTORISTA";
                 break;
+
             case 'Marino':
-                $cap = "NO";
+                $cap = "MARINO";
                 break;
         }
 
@@ -890,17 +795,25 @@ class ZarpeInternacionalController extends Controller
             echo json_encode($return);
         } else {
             $validation = json_decode($request->session()->get('validacion'), true);
+            //BUSQUEDA EN LICENCIASTITULOSGMAR
             $fechav = LicenciasTitulosGmar::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
             $InfoMarino = LicenciasTitulosGmar::where('fecha_vencimiento', $fechav[0]->fechav)->where('ci', $cedula)->get();
+
+            //BUSQUEDA EN LICENCIASTITULOSGMAR01
+            $fechav01 = LicenciasTitulosGmar01::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
+            $InfoMarino01 = LicenciasTitulosGmar01::where('fecha_vencimiento', $fechav01[0]->fechav)->where('ci', $cedula)->get();
+            //UNIMOS LAS 2 CONSULTAS
+            $mergedData = $InfoMarino->union($InfoMarino01);
+
             $infoSaime = Saime_cedula::where('cedula', $cedula)->get();
-            //  $request->session()->put('tripulantes', '');
-            if (is_null($InfoMarino->first())) {
-                $InfoMarino = "gmarNotFound"; // no encontrado en Gmar
+
+            if ($mergedData->isEmpty()) {
+                $ultimoRegistroMarino = "gmarNotFound"; // no encontrado en Gmar
 
             } else {
-                $emision = explode(' ', $InfoMarino[0]->fecha_emision);
-                list($ano, $mes, $dia) = explode("-", $emision[0]);
-                $emision[0] = $dia . '/' . $mes . '/' . $ano;
+                $ultimoRegistroMarino = $mergedData->last();
+                $fechaemision = $this->convertirFecha($ultimoRegistroMarino->fecha_emision);
+
                 if (!is_null($infoSaime->first())) {
                     $fechaNacV = $infoSaime[0]->fecha_nacimiento;
                     $sexoV = $infoSaime[0]->sexo;
@@ -910,23 +823,22 @@ class ZarpeInternacionalController extends Controller
                 }
                 $trip = [
                     "permiso_zarpe_id" => '',
-                    "nombres" => $InfoMarino[0]->nombre,
-                    "apellidos" => $InfoMarino[0]->apellido,
+                    "nombres" => $ultimoRegistroMarino->nombre,
+                    "apellidos" => $ultimoRegistroMarino->apellido,
                     "tipo_doc" => 'V',
-                    "nro_doc" => $InfoMarino[0]->ci,
+                    "nro_doc" => $ultimoRegistroMarino->ci,
                     "funcion" => $funcion,
-                    "rango" => $InfoMarino[0]->documento,
+                    "rango" => $ultimoRegistroMarino->documento,
                     "doc" => $doc,
                     "documento_acreditacion" => $docAcreditacion,
-                    "fecha_emision" => $emision[0],
-                    "solicitud" => $InfoMarino[0]->solicitud,
+                    "fecha_emision" => $fechaemision,
+                    "solicitud" => $ultimoRegistroMarino->solicitud,
                     "fecha_nacimiento" => $fechaNacV,
                     "sexo" => $sexoV,
-                    "nro_ctrl" => $InfoMarino[0]->nro_ctrl,
+                    "nro_ctrl" => $ultimoRegistroMarino->nro_ctrl,
                 ];
 
                 if (is_array($tripulantes)) {
-
                     $indice = true;
                     foreach ($tripulantes as $value) {
 
@@ -935,17 +847,16 @@ class ZarpeInternacionalController extends Controller
                         }
                     }
 
-
                 } else {
                     $indice = true;
                     $tripulantes = [];
                 }
 
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
-                $fecha_vence = strtotime($InfoMarino[0]->fecha_vencimiento);
+                $fecha_vence = strtotime($ultimoRegistroMarino->fecha_vencimiento);
 
-                if ($InfoMarino[0]->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
-                    $InfoMarino = "FoundButDefeated"; //encontrado pero documento vencido
+                if ($ultimoRegistroMarino->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
+                    $ultimoRegistroMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
 
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
@@ -961,42 +872,36 @@ class ZarpeInternacionalController extends Controller
                         ->get();
 
                     if (count($marinoAsignado) > 0 || count($marinoAsignado2) > 0) {
-                        $InfoMarino = "FoundButAssigned"; //encontrado pero asignado a otro barco
+                        $ultimoRegistroMarino = "FoundButAssigned"; //encontrado pero asignado a otro barco
                     } else {
-                        $vj = $this->validacionJerarquizacion($InfoMarino[0]->documento, $cap);
+                        $vj = $this->validacionJerarquizacion($ultimoRegistroMarino->documento, $cap);
 
                         if ($vj[0] == true) {
 
                             if (!$indice) {
-                                $InfoMarino = "TripulanteExiste";
+                                $ultimoRegistroMarino = "TripulanteExiste";
                             } else {
-
-
                                 if ($validation['pasajerosRestantes'] > 0) {
                                     array_push($tripulantes, $trip);
                                     $request->session()->put('tripulantes', $tripulantes);
                                     $validation['cantPassAbordo'] = abs(count($tripulantes) + count($pasajeros));
                                     $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
                                     $request->session()->put('validacion', json_encode($validation));
-
-                                    $InfoMarino = 'OK';
+                                    $ultimoRegistroMarino = 'OK';
                                 } else {
-                                    $InfoMarino = "FoundButMaxTripulationLimit";
+                                    $ultimoRegistroMarino = "FoundButMaxTripulationLimit";
                                 }
                             }
 
                         } else {
-                            $InfoMarino = "TripulanteNoAutorizado";
+                            $ultimoRegistroMarino = "TripulanteNoAutorizado";
                         }
-
                     }
                 }
             }
-
-            $return = [$tripulantes, $vj, $indice, $InfoMarino, $validation['cant_pasajeros'], $validation['pasajerosRestantes'], $validation['cantPassAbordo'], $marinoAsignado2, $marinoAsignado];
+            $return = [$tripulantes, $vj, $indice, $ultimoRegistroMarino, $validation['cant_pasajeros'], $validation['pasajerosRestantes'], $validation['cantPassAbordo'], $marinoAsignado2, $marinoAsignado];
             echo json_encode($return);
         }
-
     }
 
 
@@ -1027,10 +932,8 @@ class ZarpeInternacionalController extends Controller
                 }
 
                 break;
-            case 'Motorista':
-                $cap = "NO";
-                break;
             case 'Marino':
+            case 'Motorista':
                 $cap = "NO";
                 break;
         }
@@ -1051,7 +954,6 @@ class ZarpeInternacionalController extends Controller
             $sexo = $_REQUEST['sexo'];
             $fecha_nacimiento = $_REQUEST['fecha_nacimiento'];
 
-
             $trip = [
                 "permiso_zarpe_id" => '',
                 "nombres" => $nombres,
@@ -1069,7 +971,6 @@ class ZarpeInternacionalController extends Controller
                 "nro_ctrl" => ""
             ];
 
-
             $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
                 ->Join('tripulantes', 'permiso_zarpes.id', '=', 'tripulantes.permiso_zarpe_id')
                 ->where('tripulantes.nro_doc', $cedula)
@@ -1085,8 +986,6 @@ class ZarpeInternacionalController extends Controller
             if (count($marinoAsignado) > 0 || count($marinoAsignado2) > 0) {
                 $InfoMarino = "FoundButAssigned";
             } else {
-
-
                 $tripExiste = false;
                 $vj = [false];
                 if (is_array($tripulantes)) {
@@ -1099,7 +998,6 @@ class ZarpeInternacionalController extends Controller
                     if ($tripExiste) {
                         $InfoMarino = "TripulanteExiste";
                     } else {
-
                         if ($validation['pasajerosRestantes'] > 0) {
                             array_push($tripulantes, $trip);
                             $request->session()->put('tripulantes', $tripulantes);
@@ -1112,9 +1010,7 @@ class ZarpeInternacionalController extends Controller
                         } else {
                             $InfoMarino = "FoundButMaxTripulationLimit";
                         }
-
                     }
-
                 } else {
                     $tripulantes = [];
                     array_push($tripulantes, $trip);
@@ -1126,17 +1022,10 @@ class ZarpeInternacionalController extends Controller
                     $InfoMarino = "OK";
                     $vj = [true];
                 }
-
-
             }
-
-
             $return = [$tripulantes, $vj, '', $InfoMarino, $validation['cant_pasajeros'], count($tripulantes), $validation['pasajerosRestantes'], $validation['cantPassAbordo'], $marinoAsignado, $marinoAsignado2];
             echo json_encode($return);
-
         }
-
-
     }
 
     public function deleteTripulanteZI(Request $request)
@@ -1157,28 +1046,21 @@ class ZarpeInternacionalController extends Controller
             $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
             $request->session()->put('validacion', json_encode($validation));
             $borrado = [true, $validation['cantPassAbordo']];
-        } else {
-            if (is_array($tripulantes)) {
+        } else if (is_array($tripulantes)) {
 
+            foreach ($tripulantes as $key => $value) {
+                if ($value['nro_doc'] == $cedula) {
 
-                foreach ($tripulantes as $key => $value) {
-                    if ($value['nro_doc'] == $cedula) {
+                    array_splice($tripulantes, $key, 1);
+                    $request->session()->put('tripulantes', $tripulantes);
 
-                        array_splice($tripulantes, $key, 1);
-                        $request->session()->put('tripulantes', $tripulantes);
-
-                        $validation['cantPassAbordo'] = abs(count($tripulantes) + count($pasajeros));
-                        $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
-                        $request->session()->put('validacion', json_encode($validation));
-                        $borrado = [true, $validation['pasajerosRestantes'], $tripulantes];
-
-
-                    }
+                    $validation['cantPassAbordo'] = abs(count($tripulantes) + count($pasajeros));
+                    $validation['pasajerosRestantes'] = $validation['cant_pasajeros'] - abs(count($tripulantes) + count($pasajeros));
+                    $request->session()->put('validacion', json_encode($validation));
+                    $borrado = [true, $validation['pasajerosRestantes'], $tripulantes];
                 }
             }
-
         }
-
         echo json_encode($borrado);
     }
 
@@ -1206,12 +1088,10 @@ class ZarpeInternacionalController extends Controller
         return $codigo;
     }
 
-
     public function updateStatus($id, $status, $establecimiento)
     {
         $transaccion = PermisoZarpe::find($id);
         $capitania = Capitania::where('id', $transaccion->establecimiento_nautico->capitania_id)->first();
-        //$estnauticoDestino=EstablecimientoNautico::find($transaccion->establecimiento_nautico_destino_id);
         $pais = Paises::find($transaccion->paises_id);
         $notificacion = new NotificacioneController();
 
@@ -1386,7 +1266,6 @@ class ZarpeInternacionalController extends Controller
                 $value->apellidos = $tripV[0]->apellido;
                 $value->sexo = $tripV[0]->sexo;
 
-
                 $value->fecha_nacimiento = $tripV[0]->fecha_nacimiento;
                 $value->rango = $tripV[0]->documento;
                 $emision = explode(' ', $tripV[0]->fecha_emision);
@@ -1396,7 +1275,6 @@ class ZarpeInternacionalController extends Controller
                 $value->solicitud = $tripV[0]->solicitud;
                 $value->nro_ctrl = $tripV[0]->nro_ctrl;
 
-
             } else {
                 $value->fecha_emision = '';
                 $value->solicitud = '';
@@ -1404,9 +1282,7 @@ class ZarpeInternacionalController extends Controller
             }
         }
 
-
         $pasajeros = $permisoZarpe->pasajeros()->where('permiso_zarpe_id', $id)->get();
-        //$tripulantes2 = LicenciasTitulosGmar::whereIn('id', $tripulantes)->get();
         $validacionSgm = TiposCertificado::where('matricula', $permisoZarpe->matricula)->get();
         $equipos = EquipoPermisoZarpe::where('permiso_zarpe_id', $id)->get();
         $revisiones = ZarpeRevision::where('permiso_zarpe_id', $id)->get();
@@ -1465,7 +1341,6 @@ class ZarpeInternacionalController extends Controller
 
         $notificacion = new NotificacioneController();
 
-
         if ($tipo == 1 && count($capitanOrigen) > 0) {
             //mensaje para caitania origen
             $mensaje = "El Sistema de control y Gestión de Zarpes del INEA le notifica que ha recibido una
@@ -1482,14 +1357,10 @@ class ZarpeInternacionalController extends Controller
                 'fecha_salida' => $solicitud->fecha_hora_salida,
                 'fecha_regreso' => $solicitud->fecha_hora_regreso,
                 'mensaje' => $mensaje,
-
             ];
             $view = 'emails.zarpes.solicitudPermisoZarpe';
-
             $email->mailZarpe($mailTo, $subject, $data, $view);
-
             $notificacion->storeNotificaciones($capitanOrigen[0]->user_id, $subject, $mensaje, "Zarpe Internacional");
-
             $return = true;
 
         } else if (count($capitanDestino) > 0) {
@@ -1511,14 +1382,11 @@ class ZarpeInternacionalController extends Controller
 
             ];
             $view = 'emails.zarpes.solicitudPermisoZarpe';
-
             $email->mailZarpe($mailTo, $subject, $data, $view);
             $notificacion->storeNotificaciones($capitanDestino[0]->user_id, $subject, $mensaje, "Zarpe Internacional");
-
             $return = true;
         } else {
             $return = false;
-
         }
 
         if ($mailUser == true) {
@@ -1553,16 +1421,16 @@ class ZarpeInternacionalController extends Controller
         switch ($documento) {
             case 'Capitán de Altura':
                 $return = [true, $documento];
-
                 break;
+
             case 'Primer Oficial de Navegación':
                 if ($validacion['UAB'] <= 3000) {
                     $return = [true];
                 } else {
                     $return = [false];
                 }
-
                 break;
+
             case 'Segundo Oficial de Navegación':
                 if ($validacion['UAB'] <= 500) {
                     $return = [true];
@@ -1570,6 +1438,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false];
                 }
                 break;
+
             case 'Capitán de Yate':
                 if ($validacion['UAB'] <= 300) {
                     $return = [true];
@@ -1577,6 +1446,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false];
                 }
                 break;
+
             case 'Capitán Costanero':
                 $coordenadas = [];
                 if ($validacion['UAB'] <= 3000) {
@@ -1585,6 +1455,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false, $coordenadas];
                 }
                 break;
+
             case 'Patrón de Primera':
                 $coordenadas = [];
                 if ($validacion['UAB'] <= 500) {
@@ -1593,6 +1464,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false, $coordenadas];
                 }
                 break;
+
             case 'Patrón Deportivo de Primera':
                 $coordenadas = [];
                 if ($validacion['UAB'] <= 150) {
@@ -1601,6 +1473,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false, $coordenadas];
                 }
                 break;
+
             case 'Patrón de Segunda':
                 $coordenadas = [];
                 if ($validacion['UAB'] <= 500 && $validacion['eslora'] < 24) {
@@ -1609,6 +1482,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false, $coordenadas, 1];
                 }
                 break;
+
             case 'Patrón Deportivo de Segunda':
                 if ($validacion['UAB'] <= 40) {
                     $return = [true];
@@ -1616,6 +1490,7 @@ class ZarpeInternacionalController extends Controller
                     $return = [false];
                 }
                 break;
+
             case 'Patrón Deportivo de Tercera':
                 if ($validacion['UAB'] <= 10) {
                     $return = [true];
@@ -1623,33 +1498,26 @@ class ZarpeInternacionalController extends Controller
                     $return = [false];
                 }
                 break;
-            case 'Tercer Oficial de Navegación':
 
-                if ($capitan == "SI") {
-                    $return = [false];
-                } else {
-
-                    $return = [true];
-
-                }
-
-                break;
             case 'Capitán de Pesca':
-                if ($capitan == "SI") {
-                    $return = [false];
-                } else {
-
-                    $return = [true];
-
-                }
-                break;
             case 'Oficial de Pesca':
+            case 'Jefe de Máquinas':
+            case 'Tercer Oficial de Navegación':
                 if ($capitan == "SI") {
                     $return = [false];
                 } else {
                     $return = [true];
                 }
                 break;
+
+            case 'Q1':
+                if ($capitan==='MARINO') {
+                    $return=[true];
+                }else {
+                    $return=[false];
+                }
+                break;
+
             case 'Patrón Artesanal':
                 if ($capitan == "NO") {
                     if ($validacion['eslora'] <= 24) {
@@ -1660,17 +1528,9 @@ class ZarpeInternacionalController extends Controller
                 } else {
                     $return = [false];
                 }
-
-
                 break;
-            case 'Jefe de Máquinas':
-                if ($capitan == "SI") {
-                    $return = [false];
-                } else {
-                    $return = [true];
-                }
 
-                break;
+            case 'Segundo Oficial de Máquinas':
             case 'Primer Oficial de Máquinas':
                 if ($capitan == "SI") {
                     $return = [false];
@@ -1681,24 +1541,9 @@ class ZarpeInternacionalController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
                 break;
-            case 'Segundo Oficial de Máquinas':
-                if ($capitan == "SI") {
-                    $return = [false];
-                } else {
-                    if ($validacion['potencia_kw'] <= 3000) {
-                        $return = [true];
-                    } else {
-                        $return = [false];
-                    }
-                    $return = [true];
 
-                }
-
-                break;
             case 'Motorista de Primera':
                 $coordenadas = [];
                 if ($capitan == "SI") {
@@ -1710,10 +1555,9 @@ class ZarpeInternacionalController extends Controller
                         $return = [false, $coordenadas];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Motorista de Segunda':
                 $coordenadas = [];
                 if ($capitan == "SI") {
@@ -1725,10 +1569,10 @@ class ZarpeInternacionalController extends Controller
                         $return = [false, $coordenadas];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
+            case 'Oficial de Máquinas de Pesca':
             case 'Jefe de Máquinas de Pesca':
                 if ($capitan == "SI") {
                     $return = [false];
@@ -1739,10 +1583,9 @@ class ZarpeInternacionalController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
                 break;
+
             case 'Tercer Oficial de Máquinas':
                 if ($capitan == "SI") {
                     $return = [false];
@@ -1753,23 +1596,7 @@ class ZarpeInternacionalController extends Controller
                         $return = [false];
                     }
                     $return = [true];
-
                 }
-
-                break;
-            case 'Oficial de Máquinas de Pesca':
-                if ($capitan == "SI") {
-                    $return = [false];
-                } else {
-                    if ($validacion['potencia_kw'] <= 560) {
-                        $return = [true];
-                    } else {
-                        $return = [false];
-                    }
-                    $return = [true];
-
-                }
-
                 break;
 
             default:
@@ -1779,7 +1606,6 @@ class ZarpeInternacionalController extends Controller
         return $return;
     }
 
-
     public function limpiarVariablesSession()
     {
         Session::forget('pasajeros');
@@ -1788,7 +1614,6 @@ class ZarpeInternacionalController extends Controller
         Session::forget('solicitud');
         $this->step = 1;
     }
-
 
     public function BuscaEstablecimientosNauticos(Request $request)
     {
@@ -1815,8 +1640,6 @@ class ZarpeInternacionalController extends Controller
 
     public function AddDocumentosMarinosZI(Request $request)
     {
-
-
         $pasaporte = '';
         if ($request->hasFile('doc')) {
 
@@ -1829,7 +1652,6 @@ class ZarpeInternacionalController extends Controller
         } else {
             $resp1 = ['errorFile', ''];
         }
-
         $docAcreditacion = "";
         if ($request->hasFile('documentoAcreditacion')) {
 
@@ -1846,5 +1668,18 @@ class ZarpeInternacionalController extends Controller
 
     }
 
-
+    function convertirFecha($cadenaFecha)
+    {
+        try {
+            // Eliminar cualquier información de hora y minutos de la cadena
+            $cadenaFecha = preg_replace('/\s(\d+:\d+(:\d+)?(\s+)?(AM|PM)?)$/', '', $cadenaFecha);
+            // Parsear la cadena de fecha utilizando Carbon
+            $fechaCarbon = Carbon::parse($cadenaFecha);
+            // Formatear la fecha en el formato deseado (d/m/Y)
+            $fechaFormateada = $fechaCarbon->format('d/m/Y');
+            return $fechaFormateada;
+        } catch (\Exception $e) {
+            return $cadenaFecha;
+        }
+    }
 }
