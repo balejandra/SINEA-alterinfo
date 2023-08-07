@@ -1103,7 +1103,7 @@ class PermisoZarpeController extends Controller
             //BUSQUEDA EN LICENCIASTITULOSGMAR01
             $fechav01 = LicenciasTitulosGmar01::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
             $InfoMarino01 = LicenciasTitulosGmar01::where('fecha_vencimiento', $fechav01[0]->fechav)->where('ci', $cedula)->get();
-
+            // Unir las colecciones en una sola variable
             $mergedData = $InfoMarino->union($InfoMarino01);
             //BUSQUEDA EN SAIME
             $infoSaime = Saime_cedula::where('cedula', $cedula)->get();
@@ -1111,7 +1111,6 @@ class PermisoZarpeController extends Controller
             if ($mergedData->isEmpty()) {
                 $ultimoRegistroMarino = "gmarNotFound"; // no encontrado en Gmar
             } else {
-                // Unir las colecciones en una sola variable
 
                 $ultimoRegistroMarino = $mergedData->last();
                 $fechaemision=$this->convertirFecha($ultimoRegistroMarino->fecha_emision);
@@ -1236,10 +1235,8 @@ class PermisoZarpeController extends Controller
                 }
 
                 break;
-            case 'Motorista':
-                $cap = "NO";
-                break;
             case 'Marino':
+            case 'Motorista':
                 $cap = "NO";
                 break;
         }
@@ -1744,7 +1741,7 @@ class PermisoZarpeController extends Controller
                 break;
 
             case 'Primer Oficial de Navegación':
-                if ($capitan == 'SI') {
+                if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 3000) {
                         $return = [true];
                     } else {
@@ -1756,7 +1753,7 @@ class PermisoZarpeController extends Controller
                 break;
 
             case 'Segundo Oficial de Navegación':
-                if ($capitan == 'SI') {
+                if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 500) {
                         $return = [true];
                     } else {
@@ -1768,7 +1765,7 @@ class PermisoZarpeController extends Controller
                 break;
 
             case 'Capitán de Yate':
-                if ($capitan == 'SI') {
+                if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 300) {
                         $return = [true];
                     } else {
@@ -1781,7 +1778,7 @@ class PermisoZarpeController extends Controller
 
             case 'Capitán Costanero':
                 $coordenadas = [];
-                if ($capitan == 'SI') {
+                if ($capitan === 'SI') {
                     if ($validacion['UAB'] <= 3000) {
                         $return = [true, $coordenadas];
                     } else {
@@ -1859,7 +1856,7 @@ class PermisoZarpeController extends Controller
             case 'Oficial de Pesca':
             case 'Jefe de Máquinas':
             case 'Tercer Oficial de Navegación':
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     $return = [true];
@@ -1875,7 +1872,7 @@ class PermisoZarpeController extends Controller
                 break;
 
             case 'Patrón Artesanal':
-                if ($capitan == "NO") {
+                if ($capitan !== "SI") {
                     if ($validacion['eslora'] <= 24) {
                         $return = [true];
                     } else {
@@ -1888,7 +1885,7 @@ class PermisoZarpeController extends Controller
 
             case 'Segundo Oficial de Máquinas':
             case 'Primer Oficial de Máquinas':
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     if ($validacion['potencia_kw'] <= 3000) {
@@ -1902,7 +1899,7 @@ class PermisoZarpeController extends Controller
 
             case 'Motorista de Primera':
                 $coordenadas = [];
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     if ($validacion['potencia_kw'] <= 2237) {
@@ -1916,7 +1913,7 @@ class PermisoZarpeController extends Controller
 
             case 'Motorista de Segunda':
                 $coordenadas = [];
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     if ($validacion['potencia_kw'] <= 560) {
@@ -1930,7 +1927,7 @@ class PermisoZarpeController extends Controller
 
             case 'Oficial de Máquinas de Pesca':
             case 'Jefe de Máquinas de Pesca':
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     if ($validacion['potencia_kw'] <= 560) {
@@ -1943,7 +1940,7 @@ class PermisoZarpeController extends Controller
                 break;
 
             case 'Tercer Oficial de Máquinas':
-                if ($capitan == "SI") {
+                if ($capitan === "SI") {
                     $return = [false];
                 } else {
                     if ($validacion['potencia_kw'] <= 350) {

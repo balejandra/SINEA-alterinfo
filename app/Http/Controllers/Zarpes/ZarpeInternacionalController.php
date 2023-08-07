@@ -714,42 +714,6 @@ class ZarpeInternacionalController extends Controller
         echo json_encode($data);
     }
 
-
-    public function validarMarino(Request $request)
-    {
-        $cedula = $_REQUEST['cedula'];
-        $cap = $_REQUEST['cap'];
-
-        $vj = [];
-        $fechav = LicenciasTitulosGmar::select(DB::raw('MAX(fecha_vencimiento) as fechav'))->where('ci', $cedula)->get();
-
-        $data2 = LicenciasTitulosGmar::where('fecha_vencimiento', $fechav[0]->fechav)->where('ci', $cedula)->get();
-        if (is_null($data2->first())) {
-            $data2 = "gmarNotFound"; // no encontrado en Gmar
-        } else {
-            $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
-            $fecha_vence = strtotime($data2[0]->fecha_vencimiento);
-
-            if ($data2[0]->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
-                $data2 = "FoundButDefeated"; //encontrado pero documento vencido
-            } else {
-                $marinoAsignado = PermisoZarpe::select('zarpe_internacionals.status_id', 'ctrl_documento_id')
-                    ->Join('tripulantes', 'zarpe_internacionals.id', '=', 'tripulantes.zarpe_internacional_id')
-                    ->where('tripulantes.ctrl_documento_id', '=', $data2[0]->id)
-                    ->whereIn('zarpe_internacionals.status_id', [1, 3, 5])
-                    ->get();
-
-                if (count($marinoAsignado) > 0) {
-                    $data2 = "FoundButAssigned";
-                } else {
-                    $vj = $this->validacionJerarquizacion($data2[0]->documento, $cap);
-                }
-            }
-        }
-        $return = [$data2, $vj];
-        echo json_encode($return);
-    }
-
     public function validacionMarinoZI(Request $request)
     {
         $cedula = $_REQUEST['nrodoc'];
