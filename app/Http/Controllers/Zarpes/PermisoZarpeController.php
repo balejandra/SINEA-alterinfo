@@ -1115,7 +1115,7 @@ class PermisoZarpeController extends Controller
             // Unir las colecciones en una sola variable
             $mergedData = $InfoMarino->union($InfoMarino01);
 
-            printf($mergedData);
+            // printf($mergedData);
             //BUSQUEDA EN SAIME
             $infoSaime = Saime_cedula::where('cedula', $cedula)->get();
             //  dd($mergedData);
@@ -1167,11 +1167,9 @@ class PermisoZarpeController extends Controller
                 }
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
                 $fecha_vence = strtotime($ultimoRegistroMarino->fecha_vencimiento);
+                $tiposSolicitudVencimiento = ['Licencia', 'Certificado de Suficiencia', 'Forma Q'];
 
-                if (
-                    ($ultimoRegistroMarino->solicitud == 'Licencia') || ($ultimoRegistroMarino->solicitud == 'Certificado de Suficiencia')
-                    || ($ultimoRegistroMarino->solicitud == 'Forma Q') && ($fecha_actual > $fecha_vence)
-                ) {
+                if (in_array($ultimoRegistroMarino->solicitud, $tiposSolicitudVencimiento) && $fecha_actual > $fecha_vence) {
                     $ultimoRegistroMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')

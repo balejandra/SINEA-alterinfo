@@ -827,10 +827,9 @@ class ZarpeInternacionalController extends Controller
 
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
                 $fecha_vence = strtotime($ultimoRegistroMarino->fecha_vencimiento);
-                if (
-                    ($ultimoRegistroMarino->solicitud == 'Licencia') || ($ultimoRegistroMarino->solicitud == 'Certificado de Suficiencia')
-                    || ($ultimoRegistroMarino->solicitud == 'Forma Q') && ($fecha_actual > $fecha_vence)
-                ) {
+                $tiposSolicitudVencimiento = ['Licencia', 'Certificado de Suficiencia', 'Forma Q'];
+
+                if (in_array($ultimoRegistroMarino->solicitud, $tiposSolicitudVencimiento) && $fecha_actual > $fecha_vence) {
                     $ultimoRegistroMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
