@@ -209,7 +209,8 @@ class ZarpeInternacionalController extends Controller
                     $val1 = "LICENCIA DE NAVEGACIÓN no encontrada";
                     $val2 = "CERTIFICADO NACIONAL DE SEGURIDAD RADIOTELEFONICA no encontrado";
                     $val3 = "ASIGNACIÓN DE NÚMERO ISMM no encontrado";
-                    $nroCorrelativos = ["licenciaNavegacion" => '',
+                    $nroCorrelativos = [
+                        "licenciaNavegacion" => '',
                         "certificadoRadio" => '',
                         "numeroIsmm" => '',
                     ];
@@ -299,13 +300,15 @@ class ZarpeInternacionalController extends Controller
 
     public function permissionCreateStepTwo(Request $request)
     {
-        $validatedData = $request->validate([
-            'matricula' => 'required',
-            //  'UAB' => 'required',
-        ],
+        $validatedData = $request->validate(
+            [
+                'matricula' => 'required',
+                //  'UAB' => 'required',
+            ],
             [
                 'matricula.required' => 'El campo matrícula es obligatorio'
-            ]);
+            ]
+        );
         $validation = json_decode($request->session()->get('validacion'), true);
         $UAB = $request->input('UAB');
         $matricula = $request->input('matricula');
@@ -376,15 +379,17 @@ class ZarpeInternacionalController extends Controller
     public function permissionCreateSteptwoE(Request $request)
     {
         $permiso = $request->input('permiso');
-        $validatedData = $request->validate([
+        $validatedData = $request->validate(
+            [
 
-            'permiso_de_estadia' => 'required',
-            'numero_de_registro' => 'required',
-        ],
+                'permiso_de_estadia' => 'required',
+                'numero_de_registro' => 'required',
+            ],
             [
                 'permiso_de_estadia.required' => 'El campo Permiso de estadía es obligatorio',
                 'numero_de_registro.required' => 'Número de registro no encontrado'
-            ]);
+            ]
+        );
         $idpermiso = $_REQUEST['permiso_de_estadia'];
         $matricula = $_REQUEST['numero_de_registro'];
 
@@ -423,15 +428,17 @@ class ZarpeInternacionalController extends Controller
 
     public function permissionCreateStepThree(Request $request)
     {
-        $validatedData = $request->validate([
-            'tipo_de_navegacion' => 'required',
-            'capitania' => 'required',
-        ],
+        $validatedData = $request->validate(
+            [
+                'tipo_de_navegacion' => 'required',
+                'capitania' => 'required',
+            ],
             [
                 'tipo_de_navegacion.required' => 'El campo Tipo de Navegación es obligatorio',
 
                 'capitania.required' => 'El campo Capitanía es obligatorio'
-            ]);
+            ]
+        );
 
         $solicitud = json_decode($request->session()->get('solicitud'), true);
         $solicitud['tipo_zarpe_id'] = $request->input('tipo_de_navegacion', []);
@@ -459,17 +466,19 @@ class ZarpeInternacionalController extends Controller
     {
         $solicitud = json_decode($request->session()->get('solicitud'), true);
 
-        $validatedData = $request->validate([
-            'establecimientoNáuticoOrigen' => 'required',
-            'salida' => 'required',
-            'llegada' => 'required',
-            'país_de_destino' => 'required',
-            'estNauticoDestinoZI' => 'required',
-        ],
+        $validatedData = $request->validate(
+            [
+                'establecimientoNáuticoOrigen' => 'required',
+                'salida' => 'required',
+                'llegada' => 'required',
+                'país_de_destino' => 'required',
+                'estNauticoDestinoZI' => 'required',
+            ],
             [
                 'estNauticoDestinoZI.required' => 'El campo Establecimiento naútico de destino es requerido'
 
-            ]);
+            ]
+        );
         $solicitud['establecimiento_nautico_id'] = $request->input('establecimientoNáuticoOrigen');
         $solicitud['establecimiento_nautico_destino_id'] = $request->input('establecimientoNáuticoOrigen');
         $solicitud['fecha_hora_salida'] = $request->input('salida');
@@ -818,11 +827,12 @@ class ZarpeInternacionalController extends Controller
 
                 $fecha_actual = strtotime(date("d-m-Y H:i:00", time()));
                 $fecha_vence = strtotime($ultimoRegistroMarino->fecha_vencimiento);
-
-                if ($ultimoRegistroMarino->solicitud == 'Licencia' && ($fecha_actual > $fecha_vence)) {
+                if (
+                    ($ultimoRegistroMarino->solicitud == 'Licencia') || ($ultimoRegistroMarino->solicitud == 'Certificado de Suficiencia')
+                    || ($ultimoRegistroMarino->solicitud == 'Forma Q') && ($fecha_actual > $fecha_vence)
+                ) {
                     $ultimoRegistroMarino = "FoundButDefeated"; //encontrado pero documento vencido
                 } else {
-
                     $marinoAsignado = PermisoZarpe::select('permiso_zarpes.status_id', 'ctrl_documento_id')
                         ->Join('tripulantes', 'permiso_zarpes.id', '=', 'tripulantes.permiso_zarpe_id')
                         ->where('tripulantes.nro_doc', $cedula)
@@ -1441,7 +1451,7 @@ class ZarpeInternacionalController extends Controller
             case 'Patrón de Segunda':
                 $coordenadas = [];
                 if ($validacion['UAB'] <= 500 && $validacion['eslora'] < 24) {
-                    $return = [true, $coordenadas, 1];//validacion, coordenadas, cantidad de jurisdicciones que puede visitar
+                    $return = [true, $coordenadas, 1]; //validacion, coordenadas, cantidad de jurisdicciones que puede visitar
                 } else {
                     $return = [false, $coordenadas, 1];
                 }
@@ -1475,10 +1485,11 @@ class ZarpeInternacionalController extends Controller
                 break;
 
             case 'Q1':
-                if ($capitan==='MARINO') {
-                    $return=[true];
-                }else {
-                    $return=[false];
+            case 'Personal de Apoyo':
+                if ($capitan === 'MARINO') {
+                    $return = [true];
+                } else {
+                    $return = [false];
                 }
                 break;
 
